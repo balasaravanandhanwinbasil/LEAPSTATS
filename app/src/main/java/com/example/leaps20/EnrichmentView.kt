@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.leaps20.HexagonShape
 import java.time.LocalDate
 import java.util.*
@@ -167,7 +166,7 @@ fun EnrichmentEventForm(
     onDelete: () -> Unit,
     isEditing: Boolean
 ) {
-    var showDialog by remember { mutableStateOf(true) }
+    val showDialog by remember { mutableStateOf(true) }
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onCancel,
