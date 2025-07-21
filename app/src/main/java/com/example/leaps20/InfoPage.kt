@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.ViewCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
@@ -30,7 +30,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 val DarkBlue1 = Color(0xFF00497A)
 val DarkerBlue1 = Color(0xFF003D6B)
-val LightGrey2 = Color(0xFFD3D3D3)
 val LightBlue1 = Color(0xFFCCE8FF)
 
 @Composable
@@ -81,7 +80,7 @@ fun TopAppBarWithBackButton(title: String, onBack: () -> Unit) {
         },
         navigationIcon = {
             IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
         }
     )
