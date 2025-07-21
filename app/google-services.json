@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1028325607266",
+    "project_id": "codex-69446",
+    "storage_bucket": "codex-69446.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1028325607266:android:d11fff93aba351a2338e3b",
+        "android_client_info": {
+          "package_name": "com.example.leaps20"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeJuL7NRteptqA6Z2BlTt-a3VhKPQbqvQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
