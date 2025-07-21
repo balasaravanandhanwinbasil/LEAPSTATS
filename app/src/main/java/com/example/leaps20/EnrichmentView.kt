@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.leaps20.HexagonShape
 import java.time.LocalDate
-import java.time.ZoneId
 import java.util.*
 
 data class Event(
@@ -34,7 +33,7 @@ data class Event(
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EnrichmentView(navController: NavHostController) {
+fun EnrichmentView() {
     var events by remember { mutableStateOf(listOf<Event>()) }
     var isEnrichmentSheet by remember { mutableStateOf(false) }
     var editingIndex by remember { mutableStateOf<Int?>(null) }
@@ -123,7 +122,6 @@ fun EnrichmentView(navController: NavHostController) {
                 eventName = newEventName,
                 onEventNameChange = { newEventName = it },
                 eventDate = selectedDate,
-                onEventDateChange = { selectedDate = it },
                 eventColor = selectedColor,
                 onEventColorChange = { selectedColor = it },
                 onCancel = { resetForm() },
@@ -162,7 +160,6 @@ fun EnrichmentEventForm(
     eventName: String,
     onEventNameChange: (String) -> Unit,
     eventDate: LocalDate,
-    onEventDateChange: (LocalDate) -> Unit,
     eventColor: Color,
     onEventColorChange: (Color) -> Unit,
     onCancel: () -> Unit,
@@ -190,7 +187,6 @@ fun EnrichmentEventForm(
                     // Use a simple date picker for demo
                     // You can replace with a proper date picker component
                     Text("Date: ${eventDate.toString()}")
-                    // TODO: Implement DatePicker dialog to set onEventDateChange
 
                     Spacer(modifier = Modifier.height(12.dp))
 
