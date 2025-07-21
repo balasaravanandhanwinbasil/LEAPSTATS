@@ -1,5 +1,6 @@
 package com.example.leaps20
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,7 +24,9 @@ import androidx.core.view.ViewCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowInsetsCompat.Type
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 val DarkBlue1 = Color(0xFF00497A)
 val DarkerBlue1 = Color(0xFF003D6B)
@@ -31,13 +34,19 @@ val LightGrey2 = Color(0xFFD3D3D3)
 val LightBlue1 = Color(0xFFCCE8FF)
 
 @Composable
-fun LEAPSApp(outerNavController: NavHostController) {
+fun LEAPSApp(
+    outerNavController: NavHostController,
+    userData: UserData,
+    leadershipData: LeadershipData,
+    participationData: ParticipationData,
+    achievementsData: AchievementsData,
+    serviceData: ServiceData
+) {
     val nestedNavController = rememberNavController()
     NavHost(navController = nestedNavController, startDestination = "info") {
         composable("info") {
             InfoView(
                 onNavigate = { route -> nestedNavController.navigate(route) },
-                // Pass the **outer** nav controller for back button popBackStack
                 navControllerForBack = outerNavController
             )
         }
@@ -45,18 +54,30 @@ fun LEAPSApp(outerNavController: NavHostController) {
         composable("achievement") { AchievementInfoView(outerNavController) }
         composable("participation") { ParticipationInfoView(outerNavController) }
         composable("service") { ServiceInfoView(outerNavController) }
-        composable("attainment") { AttainmentView(outerNavController) }
+        composable("attainment") {
+            AttainmentView(
+                navController = outerNavController,
+                userData = userData,
+                leadershipData = leadershipData,
+                participationData = participationData,
+                achievementsData = achievementsData,
+                serviceData = serviceData
+            )
+        }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopAppBarWithBackButton(title: String, onBack: () -> Unit) {
-    TopAppBar(
+    CenterAlignedTopAppBar(
         title = {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text(text = title, fontWeight = FontWeight.Bold)
-            }
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
         },
         navigationIcon = {
             IconButton(onClick = onBack) {
@@ -65,6 +86,7 @@ fun TopAppBarWithBackButton(title: String, onBack: () -> Unit) {
         }
     )
 }
+
 
 @Composable
 fun InfoView(
@@ -104,17 +126,20 @@ fun InfoView(
                 modifier = Modifier
                     .width(330.dp)
                     .height(120.dp)
+                    .background(Color(0xFFE0FFFF), shape = MaterialTheme.shapes.medium) // Light cyan background
                     .clickable { onNavigate("attainment") },
                 contentAlignment = Alignment.Center
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
                         "Level of Attainment",
                         fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Icon(
@@ -208,13 +233,48 @@ fun ServiceInfoView(navController: NavHostController) {
 }
 
 @Composable
-fun AttainmentView(navController: NavHostController) {
-    val attainmentText = remember { mutableStateOf("Fair: 0 Point") }
+fun AttainmentView(
+    navController: NavHostController,
+    userData: UserData,
+    leadershipData: LeadershipData = viewModel(),
+    serviceData: ServiceData = viewModel(factory = ServiceDataFactory(LocalContext.current.applicationContext as Application)),
+    participationData: ParticipationData = viewModel(),
+    achievementsData: AchievementsData = viewModel()
+) {
+    var attainmentState by remember { mutableStateOf("Fair") }
+    var points by remember { mutableStateOf(0) }
+    var attainmentColor by remember { mutableStateOf(Color.Red.copy(alpha = 0.5f)) }
+
+    LaunchedEffect(
+        leadershipData.currentLeadershipPosition.collectAsState(initial = "").value,
+        achievementsData.currentHighestLevel.collectAsState(initial = 0).value,
+        participationData.attendance.collectAsState(initial = 0).value,
+        serviceData.level.collectAsState(initial = 0).value
+    ) {
+        attainmentState = userData.attainment(
+            leadershipData,
+            serviceData,
+            participationData,
+            achievementsData
+        )
+        points = when (attainmentState) {
+            "Excellent" -> 2
+            "Good" -> 1
+            else -> 0
+        }
+        attainmentColor = when (attainmentState) {
+            "Excellent" -> Color.Green.copy(alpha = 0.6f)
+            "Good" -> Color(0xFFFFA500) // orange
+            else -> Color.Red.copy(alpha = 0.5f)
+        }
+    }
+
     val attainmentLevels = listOf(
         "1. Excellent:\nAt least Level 3 in all domains, and Level 4 or higher in at least one domain.",
         "2. Good:\nAt least Level 1 in all domains, and Level 2 or higher in at least three domains.",
         "3. Fair:\nDoes not meet the above criteria."
     )
+
     Scaffold(
         topBar = {
             TopAppBarWithBackButton("Level of Attainment") {
@@ -229,14 +289,10 @@ fun AttainmentView(navController: NavHostController) {
                 .fillMaxSize()
         ) {
             Text(
-                attainmentText.value,
+                "$attainmentState: $points Point${if (points == 1) "" else "s"}",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = when (attainmentText.value) {
-                    "Excellent: 2 Points" -> Color.Green
-                    "Good: 1 Point" -> Color(0xFFFFA500)
-                    else -> Color.Red
-                },
+                color = attainmentColor,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -248,6 +304,7 @@ fun AttainmentView(navController: NavHostController) {
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

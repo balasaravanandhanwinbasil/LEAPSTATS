@@ -142,13 +142,20 @@ class MainActivity : ComponentActivity() {
                             ServiceHoursView(navController = navController, serviceData = serviceData)
                         }
                         composable("enrichment") {
-                            EnrichmentView(navController = navController)
+                            EnrichmentView()
                         }
                         composable("help") {
                             HelpView(navController = navController)
                         }
                         composable("info") {
-                            LEAPSApp(outerNavController = navController)
+                            LEAPSApp(
+                                outerNavController = navController,
+                                userData = userData,
+                                leadershipData = leadershipData,
+                                participationData = participationData,
+                                achievementsData = achievementsData,
+                                serviceData = serviceData
+                            )
                         }
                     }
                 }
