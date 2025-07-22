@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "cellular-potion-465213-h1",
+  "private_key_id": "2b6b3ccbd39233946ab03b745d23e56fc20e0186",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCbzjXIutnubW3r\n+TeTl7w0eH4TsST6Y455BkQl+1IN5IJH/g9KU2TZ2CgSwqCkmwTyWoABQGjygur/\nh95u17BHcWB7McMyiIdwePToHcee5T2VP78qZil3oVJqw/bc7ljmefycmzVwQGaV\nsxsImtYroVcDK3mEaA8byMkzfZTo6PmsOPrTQF7dEbayoppQO0XTgDTMllwEfJzq\nibmczZZEehi0o/nYUY6EKOrU3PejvmhF5cCq18rIg0V8V64icVKpJcFHned7kjjh\nmdrhpIKBasouXxUvsFPqzAsz82m/yWOysoHl/GiEVIkekrrjT0GGg7u/K0FCgJdo\npO9X3I5fAgMBAAECggEAGBk8ZxXE4Nn60dre5myREanpZkZUqoh84D9AiddmM6aP\nzW7VvUX00rUE+GczeFekhjp1PhGmVIw8qNVtFBvhtMsr2czdR5L9JT+wMblux3w8\nRY9x6VmajwRcE7jHwBhQQSXGarqe+K5yr4jfujmovWAxGIPAQeM5IwUFXyTMxCa2\n8kW5UUUHT4b4DNlSsOKrL60BWYypVY01d6rwibXemdiGNsOx7glNogLFVVLMIvS8\nhmwvaQxTuTa1S2OBXtGlmdbx4rWNIUPZI4UujDtAiAKWoXEnmh8QXdJH1m6U8bWg\nMLqLhd5nKTTNRaxDGrmzKe8jogAFeYTYFjep9/aScQKBgQDS+r1m64dut7ixrUrF\n7L/lom4yPm4Ndv8+S8IpDIjc89emhqoba3QsqOtNqpse2S7zd0IIwZ2ce6fTHnBY\n/CmHXreuU4N4C9LHe4vjmsfGN36qPJ/xoDEupdg/RF19mZOVgFK4Vl6zBwiPmQSl\ni0WfT5GwqJ3ABeBQacqtXGoWcwKBgQC9DXX29pjiKFIcRtpoqbkyo9tzUAe9TFon\ny4mmxXqCRD+DSWNmVjjdGb6h3C7I3r4Bcora4hQPaq5C6z5GOWGPbtEdGQ6R0CEa\nCGbG799tSxs3ofJc8OVup4fqoLZqe8areIfI4IjSitnlFkKefIksZs3fWgI++s3L\n6QWXIlfBZQKBgGdxo04EK3pAwGD1i5Tx2MD53DfsXj9h2hIsSP2hdLWJJXIz0tHw\n5JxFEmIZRUdhy2B6V7k9XU7tXkLoSMOIl8AU09C4h9xjR6yhSdyF9m+cpBFJ+k4Z\nciPiEt4qYgCEPVVu/p/9UR9MUok9yIZ2e+N5uwA4HGibOPmUdVh82FM7AoGAVqoE\nCMl0vkATnAjS+KXNUyyQXiUy1xFYRuPkX0Ip7euRXgLXgUNHX/v8SsDf5Y9OdOVo\nR/zZi1OxPNYQPyrw0UrQq9Efv7I0anWtf8bYmoaSnIctznNUCczc3q770IabRWHE\nhU6BCltCleUFdxfJ3kPmXlwpqWtZyf8xY94Hco0CgYBE32h5KJWVmGNkDpwmx70h\nSIABL7MzxZIILLAtqMGpz0ojqc8Mk+GRhUg236RLtNA64ceY2GIk1nE5OZ+02Ru+\n8qzvm570sBU4MuS0jg0gs2cpCZBCbVqGrCrbZRilpdNHbWgnW3DBk/ENO3BV9zgH\ny+fYj+vjEXLmUFxEhtRbwA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "labxgooglecalendar@cellular-potion-465213-h1.iam.gserviceaccount.com",
+  "client_id": "102630011112613138911",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/labxgooglecalendar%40cellular-potion-465213-h1.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

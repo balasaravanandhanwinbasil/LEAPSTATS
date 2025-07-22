@@ -1,8 +1,12 @@
 package com.example.leaps20
 
+import android.widget.Toast
+import android.widget.Toast.makeText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material3.*
@@ -11,8 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
@@ -35,6 +41,11 @@ fun ParticipationHourView(
 ) {
     val uriHandler = LocalUriHandler.current
     val attendance by participation.attendance.collectAsState()
+
+    var showEditDialog by remember { mutableStateOf(false) }
+    var editedAttendance by remember { mutableStateOf(attendance.toString()) }
+
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         participation.fetchParticipation()
@@ -79,25 +90,33 @@ fun ParticipationHourView(
                         .shadow(
                             3.dp,
                             shape = HexagonShape(),
-                            ambientColor = Color(0xFFB0B0B0),
-                            spotColor = Color(0xFFB0B0B0)
+                            ambientColor = Color(0xFF505080),  // dark shadow
+                            spotColor = Color(0xFF505080)
                         )
-                        .padding(16.dp),
+                        .background(Color(0xFF003366), shape = HexagonShape()) // Dark blue fill
+                        .padding(16.dp)
+                        .clickable {
+                            editedAttendance = attendance.toString()
+                            showEditDialog = true
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "$attendance%",
                             fontWeight = FontWeight.Bold,
+                            color = Color.White,
                             style = MaterialTheme.typography.headlineMedium
                         )
                         Text(
                             text = "${participation.year} $yearText",
                             fontWeight = FontWeight.Bold,
+                            color = Color.White,
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Text(
                             text = "Level $levelDisplay",
+                            color = Color.White,
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -107,7 +126,7 @@ fun ParticipationHourView(
 
                 Button(
                     onClick = {
-                        uriHandler.openUri("https://docs.google.com/spreadsheets/u/0/?tgif=d")
+                        makeText(context, "Coming soon!", Toast.LENGTH_SHORT).show()
                     },
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier
@@ -124,4 +143,49 @@ fun ParticipationHourView(
             }
         }
     }
+
+    // Edit Attendance Dialog
+    if (showEditDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditDialog = false },
+            title = { Text("Edit Participation") },
+            text = {
+                Column {
+                    Text("Enter attendance percentage (0-100):")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = editedAttendance,
+                        onValueChange = { newValue ->
+                            if (newValue.all { it.isDigit() } && newValue.length <= 3) {
+                                editedAttendance = newValue
+                            }
+                        },
+                        singleLine = true,
+                        placeholder = { Text("e.g. 85") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val newAttendanceInt = editedAttendance.toIntOrNull()
+                        if (newAttendanceInt != null && newAttendanceInt in 0..100) {
+                            participation.updateParticipation(newAttendanceInt)
+                            showEditDialog = false
+                        } else {
+                        }
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
+

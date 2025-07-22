@@ -23,6 +23,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import androidx.compose.runtime.State
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 // USER MANAGER
@@ -497,6 +500,20 @@ class ParticipationData : ViewModel() {
             }
             .addOnFailureListener { error ->
                 println("Error fetching participation data: ${error.localizedMessage}")
+            }
+    }
+
+    fun updateParticipation(newAttendance: Int) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        if (newAttendance !in 0..100) return
+
+        db.collection("users").document(uid)
+            .update("participationAttendance", newAttendance)
+            .addOnSuccessListener {
+                _attendance.value = newAttendance
+            }
+            .addOnFailureListener { error ->
+                println("Error updating participation data: ${error.localizedMessage}")
             }
     }
 }

@@ -25,6 +25,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.core.view.WindowInsetsCompat.Type
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -90,7 +93,7 @@ fun TopAppBarWithBackButton(title: String, onBack: () -> Unit) {
 @Composable
 fun InfoView(
     onNavigate: (String) -> Unit,
-    navControllerForBack: NavHostController  // <-- renamed param to make clear this is for back
+    navControllerForBack: NavHostController
 ) {
     val view = LocalView.current
     val windowInsets = ViewCompat.getRootWindowInsets(view)
@@ -100,7 +103,6 @@ fun InfoView(
 
     Scaffold(topBar = {
         TopAppBarWithBackButton(title = "LEAPS INFO") {
-            // Use outer nav controller here for popping back
             navControllerForBack.popBackStack()
         }
     }) { paddingValues ->
@@ -337,10 +339,10 @@ fun InfoDetailScreen(
             ) {
                 Text(
                     when (title) {
-                        "Achievement" -> "Achievement levels are for students accomplishments in CCA..."
-                        "Participation" -> "Participation is for students participation in CCA..."
-                        "Service" -> "Service hours are for students who contribute to the community..."
-                        "Leadership" -> "Leadership levels are for students who develop leadership skills..."
+                        "Achievement" -> "Achievement levels are for students accomplishments in CCA outside classrooms. Opportunities to representant schools are important experiences and better caters to their interests and talents."
+                        "Participation" -> "Participation is for students participation in CCA. It is based on the number of years of participation, their conduct and active contribution."
+                        "Service" -> "Service hours are for students who contribute to the community. Every student has to contribute at least 6h per year. Students will get hours for planning, service and reflection in a VIA/SIP/SL project."
+                        "Leadership" -> "Leadership levels are for students who develop leadership skills (e.g. take charge of their growth, work in teams, and serve others). This includes boards, CCA, lead in a project, NYAA."
                         else -> ""
                     },
                     fontSize = 16.sp,
@@ -362,6 +364,7 @@ fun InfoDetailScreen(
 @Composable
 fun LevelCard(title: String, description: String) {
     var expanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -383,13 +386,49 @@ fun LevelCard(title: String, description: String) {
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
+
             if (expanded) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = description,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                FormattedDescription(description)
             }
         }
     }
 }
+
+@Composable
+fun FormattedDescription(description: String) {
+    val lines = description.split('\n')
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        lines.forEach { line ->
+            val trimmed = line.trim()
+            val annotated = buildAnnotatedString {
+                when {
+                    trimmed.matches(Regex("""^\d+\.\s+.*""")) -> {
+                        val numberEnd = trimmed.indexOf('.') + 1
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append(trimmed.substring(0, numberEnd))
+                        }
+                        append(" ")
+                        append(trimmed.substring(numberEnd + 1).trim())
+                    }
+                    trimmed.startsWith("- ") -> {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                            append("• ")
+                        }
+                        append(trimmed.substring(2))
+                    }
+                    else -> append(trimmed)
+                }
+            }
+
+            Text(
+                text = annotated,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 20.sp
+            )
+        }
+    }
+}
+
