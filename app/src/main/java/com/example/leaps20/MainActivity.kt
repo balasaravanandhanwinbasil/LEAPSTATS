@@ -38,13 +38,19 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Autorenew
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Person
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.core.view.WindowCompat
 
 
@@ -279,7 +285,7 @@ fun HomeView(
             TopAppBar(
                 title = {
                     Text(
-                        text = "LEAPS 2.0",
+                        text = "LEAPSTATS",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
                     )
@@ -288,7 +294,7 @@ fun HomeView(
                     TextButton(onClick = { navController.navigate("help") }) {
                         Icon(Icons.Default.List, contentDescription = "Help")
                         Spacer(Modifier.width(4.dp))
-                        Text("Help")
+                        Text("Info")
                     }
                 }
             )
@@ -323,42 +329,53 @@ fun HomeView(
             }
 
             HexagonButton(
-                title = "$safeUserName:\n$userCCA",
+                title = "Profile",
+                stat = "$safeUserName\n$userCCA",
                 color = Color(0xFF114056),
                 textColor = Color.White,
-                modifier = Modifier.offset(x = 0.dp, y = (-dyLong).dp)
+                modifier = Modifier.offset(x = 0.dp, y = (-dyLong).dp),
+                icon = Icons.Default.AccountCircle
             ) { navController.navigate("profile") }
 
             HexagonButton(
-                title = "Leadership:\n$leadershipPosition",
+                title = "Leadership",
+                stat = leadershipPosition,
                 color = Color(0xFF03709C),
                 textColor = Color.White,
-                modifier = Modifier.offset(x = dx.dp, y = (-dyShort).dp)
+                modifier = Modifier.offset(x = dx.dp, y = (-dyShort).dp),
+                icon = Icons.Default.Person
             ) { navController.navigate("leadership") }
 
             HexagonButton(
-                title = "Achievements:\nLevel $achievementsHighestLevel",
+                title = "Achievements",
+                stat = "Level $achievementsHighestLevel",
                 color = Color(0xFFCCEFFF),
                 textColor = Color.Black,
-                modifier = Modifier.offset(x = dx.dp, y = dyShort.dp)
+                modifier = Modifier.offset(x = dx.dp, y = dyShort.dp),
+                icon = Icons.Default.EmojiEvents
             ) { navController.navigate("achievements") }
 
             HexagonButton(
-                title = "Participation:\n$participationAttendance%",
+                title = "Participation",
+                stat = "$participationAttendance%",
                 color = Color(0xFF03709C),
                 textColor = Color.White,
-                modifier = Modifier.offset(x = (-dx).dp, y = dyShort.dp)
+                modifier = Modifier.offset(x = (-dx).dp, y = dyShort.dp),
+                icon = Icons.Default.Group
             ) { navController.navigate("participation") }
 
             HexagonButton(
-                title = "Service:\n$totalServiceHours hours",
+                title = "Service",
+                stat = "$totalServiceHours hours",
                 color = Color(0xFFCCEFFF),
                 textColor = Color.Black,
-                modifier = Modifier.offset(x = (-dx).dp, y = (-dyShort).dp)
+                modifier = Modifier.offset(x = (-dx).dp, y = (-dyShort).dp),
+                icon = Icons.Filled.Autorenew
             ) { navController.navigate("service") }
 
             HexagonButton(
                 title = "Leaps 2.0",
+                stat = "",
                 icon = Icons.Default.List,
                 color = Color.White,
                 textColor = Color.Black,
@@ -372,6 +389,7 @@ fun HomeView(
 @Composable
 fun HexagonButton(
     title: String,
+    stat: String,
     icon: ImageVector? = null,
     color: Color,
     textColor: Color,
@@ -381,7 +399,7 @@ fun HexagonButton(
     Box(
         modifier = modifier
             .size(130.dp)
-            .shadow(8.dp, HexagonShape(), clip = false) // Shadow behind
+            .shadow(8.dp, HexagonShape(), clip = false)
             .clip(HexagonShape())
             .background(color)
             .border(2.dp, Color.Black, HexagonShape())
@@ -400,14 +418,18 @@ fun HexagonButton(
             Text(
                 text = title,
                 color = textColor,
+                style = MaterialTheme.typography.titleSmall.copy(
+                    textDecoration = TextDecoration.Underline,
+                    fontWeight = FontWeight.Bold
+                ),
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = stat,
+                color = textColor,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium,
-                maxLines = 3,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-                softWrap = true,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                lineHeight = 20.sp
+                textAlign = TextAlign.Center
             )
         }
     }

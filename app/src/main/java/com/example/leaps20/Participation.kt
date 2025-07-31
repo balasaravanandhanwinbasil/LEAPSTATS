@@ -56,7 +56,7 @@ fun ParticipationHourView(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xFFB0E0E6), // Full blue background
+        containerColor = Color.Transparent,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -68,7 +68,7 @@ fun ParticipationHourView(
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFFB0E0E6)
+                    containerColor = Color.Transparent
                 )
             )
         }

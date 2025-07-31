@@ -1,9 +1,13 @@
 package com.example.leaps20
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Group
@@ -13,7 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -27,7 +36,9 @@ data class TeamMember(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelpView(navController: NavHostController) {
-    val darkBlue1 = Color(0xFF123456) // Replace with your Color(.darkBlue1) value
+    val darkBlue1 = Color(0xFF123456)
+    val context = LocalContext.current
+    val email = "codexleaps2.0@gmail.com"
 
     val team = listOf(
         TeamMember(
@@ -65,7 +76,17 @@ fun HelpView(navController: NavHostController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Acknowledgements") }
+                title = {
+                    Text("Acknowledgements", fontWeight = FontWeight.Bold)
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
             )
         }
     ) { padding ->
@@ -92,10 +113,28 @@ fun HelpView(navController: NavHostController) {
             }
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    "For any problems or feedback, contact codexleaps2.0@gmail.com",
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                val annotatedText = buildAnnotatedString {
+                    append("For any problems or feedback, contact ")
+                    pushStringAnnotation(tag = "EMAIL", annotation = "mailto:$email")
+                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary, textDecoration = TextDecoration.Underline)) {
+                        append(email)
+                    }
+                    pop()
+                }
+
+                ClickableText(
+                    text = annotatedText,
+                    style = LocalTextStyle.current.copy(fontSize = 16.sp),
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    onClick = { offset ->
+                        annotatedText.getStringAnnotations(tag = "EMAIL", start = offset, end = offset)
+                            .firstOrNull()?.let { annotation ->
+                                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                    data = Uri.parse(annotation.item)
+                                }
+                                context.startActivity(intent)
+                            }
+                    }
                 )
             }
         }
