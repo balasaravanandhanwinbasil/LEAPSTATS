@@ -1,7 +1,5 @@
 package com.example.leaps20
 
-import AddEventHexagon
-import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,14 +7,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Autorenew
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,7 +43,11 @@ fun ServiceHoursView(
         showSheet = false
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -89,7 +88,12 @@ fun ServiceHoursView(
                                         editingIndex = colIndex * 2
                                         showSheet = true
                                     }
-                                    .border(2.dp, Color.Black, shape = HexagonShape())
+                                    .border(
+                                        2.dp,
+                                        MaterialTheme.colorScheme.outline,
+                                        shape = HexagonShape()
+                                    )
+
                             )
                         }
                 }
@@ -113,13 +117,18 @@ fun ServiceHoursView(
                                         editingIndex = colIndex * 2 + 1
                                         showSheet = true
                                     }
-                                    .border(2.dp, Color.Black, shape = HexagonShape())
+                                    .border(
+                                        2.dp,
+                                        MaterialTheme.colorScheme.outline,
+                                        shape = HexagonShape()
+                                    )
+
                             )
                         }
                 }
             }
 
-            Spacer(modifier = Modifier.height(65.dp))
+            Spacer(modifier = Modifier.height(55.dp))
 
             AddAchievementHexagon(
                 onClick = {
@@ -131,34 +140,59 @@ fun ServiceHoursView(
             if (showSheet) {
                 AlertDialog(
                     onDismissRequest = { showSheet = false },
-                    title = { Text(if (editingIndex != null) "Edit Service" else "Add Service") },
+                    title = { Text(if (editingIndex != null) eventName else "Add Service", color = Colours.text) },
                     text = {
                         Column {
                             OutlinedTextField(
                                 value = eventName,
                                 onValueChange = { eventName = it },
-                                label = { Text("Event Name*") }, // mark required
+                                label = { Text("Event Name*") },
                                 isError = eventName.isBlank()
                             )
                             if (eventName.isBlank()) {
                                 Text(
-                                    text = "Event name cannot be empty",
+                                    text = "Event name cannot be empty!",
                                     color = MaterialTheme.colorScheme.error,
                                     style = MaterialTheme.typography.bodySmall,
                                     modifier = Modifier.padding(start = 16.dp, top = 2.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("$hours hour${if (hours == 1) "" else "s"}")
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Slider(
-                                    value = hours.toFloat(),
-                                    onValueChange = { hours = it.toInt() },
-                                    valueRange = 0f..100f,
-                                    steps = 99
+                            Text(
+                                text = "Select Hours Spent",
+                                style = MaterialTheme.typography.labelSmall
+                            )
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Button(
+                                    onClick = { if (hours > 0) hours -= 1 },
+                                    contentPadding = PaddingValues(0.dp),
+                                    modifier = Modifier.size(30.dp)
+                                ) {
+                                    Text("-")
+                                }
+
+                                Spacer(modifier = Modifier.width(16.dp))
+
+                                Text(
+                                    text = "$hours hour${if (hours == 1) "" else "s"}",
+                                    style = MaterialTheme.typography.bodyLarge
                                 )
+
+                                Spacer(modifier = Modifier.width(16.dp))
+
+                                Button(
+                                    onClick = { if (hours < 100) hours += 1 },
+                                    contentPadding = PaddingValues(0.dp),
+                                    modifier = Modifier.size(30.dp)
+                                ) {
+                                    Text("+")
+                                }
                             }
+
                             Spacer(modifier = Modifier.height(8.dp))
                             DropdownWithHeader(
                                 label = "Service Type",
@@ -211,7 +245,7 @@ fun ServiceHoursView(
                             }
                         }
                         TextButton(onClick = { showSheet = false }) {
-                            Text("Cancel")
+                            Text("Close")
                         }
                     }
                 )

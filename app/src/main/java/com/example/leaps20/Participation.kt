@@ -44,6 +44,7 @@ fun ParticipationHourView(
 
     var showEditDialog by remember { mutableStateOf(false) }
     var editedAttendance by remember { mutableStateOf(attendance.toString()) }
+    var editedYear by remember { mutableStateOf(participation.year.toString()) }
 
     val context = LocalContext.current
 
@@ -76,7 +77,8 @@ fun ParticipationHourView(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
+                .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.TopCenter
         ) {
             Column(
@@ -86,7 +88,12 @@ fun ParticipationHourView(
                 Box(
                     modifier = Modifier
                         .size(width = 180.dp, height = 200.dp)
-                        .border(2.dp, Color.Black, shape = HexagonShape())
+                        .border(
+                            2.dp,
+                            MaterialTheme.colorScheme.outline,
+                            shape = HexagonShape()
+                        )
+
                         .shadow(
                             3.dp,
                             shape = HexagonShape(),
@@ -97,7 +104,9 @@ fun ParticipationHourView(
                         .padding(16.dp)
                         .clickable {
                             editedAttendance = attendance.toString()
+                            editedYear = participation.year.toString()
                             showEditDialog = true
+
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -164,14 +173,34 @@ fun ParticipationHourView(
                         placeholder = { Text("e.g. 85") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Enter number of years in CCA:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = editedYear,
+                        onValueChange = { newValue ->
+                            if (newValue.all { it.isDigit() } && newValue.length <= 2) {
+                                editedYear = newValue
+                            }
+                        },
+                        singleLine = true,
+                        placeholder = { Text("e.g. 3") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
                 }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         val newAttendanceInt = editedAttendance.toIntOrNull()
+
                         if (newAttendanceInt != null && newAttendanceInt in 0..100) {
-                            participation.updateParticipation(newAttendanceInt)
+                            val newYearInt = editedYear.toIntOrNull()
+                            if (newAttendanceInt != null && newYearInt != null && newAttendanceInt in 0..100 && newYearInt in 1..10) {
+                                participation.updateParticipation(newAttendanceInt, newYearInt)
+                                showEditDialog = false
+                            }
+
                             showEditDialog = false
                         } else {
                         }

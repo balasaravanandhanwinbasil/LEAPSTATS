@@ -26,6 +26,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.leaps20.ui.theme.LeapsBlue
 
 data class TeamMember(
     val name: String,
@@ -44,32 +45,32 @@ fun HelpView(navController: NavHostController) {
         TeamMember(
             "Tess Lee Jin En",
             "Chief Executive Officer",
-            { Icon(Icons.Default.Person, contentDescription = null, tint = darkBlue1, modifier = Modifier.size(32.dp)) }
+            { Icon(Icons.Default.Person, contentDescription = null, tint = LeapsBlue, modifier = Modifier.size(32.dp)) }
         ),
         TeamMember(
             "Vijayaganapathy Pavithraa",
             "Chief Operating Officer",
-            { Icon(Icons.Default.Group, contentDescription = null, tint = darkBlue1, modifier = Modifier.size(32.dp)) }
+            { Icon(Icons.Default.Group, contentDescription = null, tint = LeapsBlue, modifier = Modifier.size(32.dp)) }
         ),
         TeamMember(
             "Xi Yue Gong",
             "Chief Design Officer",
-            { Icon(Icons.Default.Brush, contentDescription = null, tint = darkBlue1, modifier = Modifier.size(32.dp)) }
+            { Icon(Icons.Default.Brush, contentDescription = null, tint = LeapsBlue, modifier = Modifier.size(32.dp)) }
         ),
         TeamMember(
             "Balasaravanan Dhanwin Basil",
             "Chief Technology Officer (Android)",
-            { Icon(Icons.Default.Build, contentDescription = null, tint = darkBlue1, modifier = Modifier.size(32.dp)) }
+            { Icon(Icons.Default.Build, contentDescription = null, tint = LeapsBlue, modifier = Modifier.size(32.dp)) }
         ),
         TeamMember(
             "Kesler Ang Kang Zhi",
             "Chief Technology Officer (iOS)",
-            { Icon(Icons.Default.Build, contentDescription = null, tint = darkBlue1, modifier = Modifier.size(32.dp)) }
+            { Icon(Icons.Default.Build, contentDescription = null, tint = LeapsBlue, modifier = Modifier.size(32.dp)) }
         ),
         TeamMember(
             "Mr Ng Jun Wei",
-            "Client",
-            { Icon(Icons.Default.Person, contentDescription = null, tint = darkBlue1, modifier = Modifier.size(32.dp)) }
+            "Teacher IC",
+            { Icon(Icons.Default.Person, contentDescription = null, tint = LeapsBlue, modifier = Modifier.size(32.dp)) }
         )
     )
 

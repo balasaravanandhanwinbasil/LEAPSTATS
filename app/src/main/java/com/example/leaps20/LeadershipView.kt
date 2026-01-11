@@ -47,91 +47,84 @@ fun LeadershipView(
         dataManager.loadLeadershipPositions()
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFB0E0E6)) // FULL SCREEN BLUE BACKGROUND
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),  // no background here
-            containerColor = Color.Transparent  // Make Scaffold background transparent
-        ) { padding ->
-            Column(
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+
+            SectionHeader(
+                title = "Leadership",
+                subtitle = "Level: $level",
+                icon = Icons.Default.Person,
+                navController = navController
+            )
+
+            LazyColumn(
                 modifier = Modifier
-                    .padding(padding)
                     .fillMaxSize()
+                    .padding(horizontal = 24.dp),
+                contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                // Title and Level
-                SectionHeader(
-                    title = "Leadership",
-                    subtitle = "Level: $level",
-                    icon = Icons.Default.Person,
-                    navController = navController
-                )
 
-                // Content
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 24.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp)
-                ) {
-                    itemsIndexed(leadershipPositions) { index, position ->
-                        Row(
+                itemsIndexed(leadershipPositions) { index, position ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement =
+                            if (index % 2 == 0) Arrangement.Start else Arrangement.End
+                    ) {
+                        LeadershipHexagonView(
+                            leadershipPositionName = position.name,
+                            leadershipPositionYear = position.year,
+                            level = position.level,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = if (index % 2 == 0) Arrangement.Start else Arrangement.End,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            LeadershipHexagonView(
-                                leadershipPositionName = position.name,
-                                leadershipPositionYear = position.year,
-                                level = position.level,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clickable {
-                                        selectedPosition = position.name
-                                        selectedYear = position.year
-                                        editingIndex = index
-                                        showSheet = true
-                                    }
-                                    .shadow(5.dp, shape = HexagonShape())
-                                    .border(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), shape = HexagonShape())
-                            )
-                            Spacer(modifier = Modifier.width(8.dp)) // increased spacing
-                            IconButton(
-                                onClick = { dataManager.removeLeadershipPosition(index) },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Remove position",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
-
-                    // Add button hex
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = if (leadershipPositions.size % 2 == 0) Arrangement.Start else Arrangement.End,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            AddLeadershipHexagon(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .border(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), shape = HexagonShape()),
-                                onClick = {
-                                    selectedPosition = ""
-                                    selectedYear = currentYear
-                                    editingIndex = null
+                                .weight(1f)
+                                .clickable {
+                                    selectedPosition = position.name
+                                    selectedYear = position.year
+                                    editingIndex = index
                                     showSheet = true
                                 }
-                            )
-                        }
+                                .shadow(
+                                    elevation = 6.dp,
+                                    shape = HexagonShape()
+                                )
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outline,
+                                    HexagonShape()
+                                )
+                        )
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement =
+                            if (leadershipPositions.size % 2 == 0)
+                                Arrangement.Start else Arrangement.End
+                    ) {
+                        AddLeadershipHexagon(
+                            modifier = Modifier
+                                .weight(1f)
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outline,
+                                    HexagonShape()
+                                ),
+                            onClick = {
+                                selectedPosition = ""
+                                selectedYear = currentYear
+                                editingIndex = null
+                                showSheet = true
+                            }
+                        )
                     }
                 }
             }
@@ -183,7 +176,7 @@ fun LeadershipHexagonView(
                 color = textColor,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                maxLines = 2
+                maxLines = 3
             )
             Spacer(Modifier.height(6.dp))
             Text(
@@ -235,11 +228,9 @@ fun LeadershipPositionSheet(
     onShowSheetChange: (Boolean) -> Unit,
     yearRange: List<Int>
 ) {
-    val allCategories = LeadershipData.allCategories
-    val scrollState = rememberScrollState()
-
     AlertDialog(
         onDismissRequest = { onShowSheetChange(false) },
+        containerColor = MaterialTheme.colorScheme.surface,
         title = {
             Text(if (editingIndex != null) "Edit Position" else "Add Position")
         },
@@ -247,104 +238,67 @@ fun LeadershipPositionSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 400.dp)
-                    .verticalScroll(scrollState)
+                    .verticalScroll(rememberScrollState())
             ) {
-                allCategories.forEach { category ->
+                LeadershipData.allCategories.forEach { category ->
                     Text(
                         category,
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
+
                     LeadershipData.getPositionsForCategory(category).forEach { item ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { onPositionChange(item) }
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 item,
-                                color = if (selectedPosition == item) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                color =
+                                    if (selectedPosition == item)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurface
                             )
                             if (selectedPosition == item) {
                                 Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "Selected",
+                                    Icons.Default.Check,
+                                    contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Year", style = MaterialTheme.typography.titleMedium)
-                yearRange.forEach { year ->
-                    Text(
-                        year.toString(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onYearChange(year) }
-                            .background(
-                                if (year == selectedYear)
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                else
-                                    Color.Transparent
-                            )
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
-                }
             }
         },
         confirmButton = {
             TextButton(
+                enabled = selectedPosition.isNotEmpty(),
                 onClick = {
-                    if (selectedPosition.isNotEmpty()) {
-                        if (editingIndex != null) {
-                            dataManager.updateLeadershipPosition(editingIndex, selectedPosition, selectedYear)
-                        } else {
-                            dataManager.addLeadershipPosition(selectedPosition, selectedYear)
-                        }
-                        onPositionChange("")
-                        onYearChange(Calendar.getInstance().get(Calendar.YEAR))
-                        onEditingIndexChange(null)
-                        onShowSheetChange(false)
-                    }
-                },
-                enabled = selectedPosition.isNotEmpty()
+                    if (editingIndex != null)
+                        dataManager.updateLeadershipPosition(
+                            editingIndex, selectedPosition, selectedYear
+                        )
+                    else
+                        dataManager.addLeadershipPosition(
+                            selectedPosition, selectedYear
+                        )
+
+                    onEditingIndexChange(null)
+                    onShowSheetChange(false)
+                }
             ) {
                 Text(if (editingIndex != null) "Update" else "Add")
             }
         },
         dismissButton = {
-            Row {
-                if (editingIndex != null) {
-                    TextButton(
-                        onClick = {
-                            dataManager.removeLeadershipPosition(editingIndex)
-                            onPositionChange("")
-                            onYearChange(Calendar.getInstance().get(Calendar.YEAR))
-                            onEditingIndexChange(null)
-                            onShowSheetChange(false)
-                        }
-                    ) {
-                        Text("Delete", color = MaterialTheme.colorScheme.error)
-                    }
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                TextButton(
-                    onClick = {
-                        onPositionChange("")
-                        onYearChange(Calendar.getInstance().get(Calendar.YEAR))
-                        onEditingIndexChange(null)
-                        onShowSheetChange(false)
-                    }
-                ) {
-                    Text("Cancel")
-                }
+            TextButton(onClick = { onShowSheetChange(false) }) {
+                Text("Cancel")
             }
         }
     )

@@ -2,7 +2,12 @@ package com.example.leaps20
 
 import android.app.Application
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.google.firebase.Firebase
@@ -16,22 +21,21 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.toObject
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import androidx.compose.runtime.State
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.Color
+import java.time.LocalDate
+import java.time.LocalDate.parse
+import java.util.UUID
 
 
 // USER MANAGER
 
 class UserManager private constructor() : ViewModel() {
-
     companion object {
         val shared: UserManager by lazy { UserManager() }
     }
@@ -503,14 +507,20 @@ class ParticipationData : ViewModel() {
             }
     }
 
-    fun updateParticipation(newAttendance: Int) {
+    fun updateParticipation(newAttendance: Int, newYear: Int) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        if (newAttendance !in 0..100) return
+        if (newAttendance !in 0..100 || newYear !in 1..10) return // adjust range as needed
+
+        val updates = mapOf(
+            "participationAttendance" to newAttendance,
+            "participationYear" to newYear
+        )
 
         db.collection("users").document(uid)
-            .update("participationAttendance", newAttendance)
+            .update(updates)
             .addOnSuccessListener {
                 _attendance.value = newAttendance
+                year = newYear
             }
             .addOnFailureListener { error ->
                 println("Error updating participation data: ${error.localizedMessage}")
@@ -551,7 +561,7 @@ class ServiceData(application: Application) : AndroidViewModel(application) {
         loadServiceEvents()
     }
 
-    private fun loadServiceEvents() {
+    fun loadServiceEvents() {
         uid?.let { userId ->
             db.collection("users").document(userId)
                 .collection("serviceEvents")
@@ -704,7 +714,7 @@ class UserData(context: Context) : ViewModel() {
         return uid?.let { db.collection("users").document(it) }
     }
 
-    private fun listenToFirestore() {
+    fun listenToFirestore() {
         getUserDocument()?.addSnapshotListener { snapshot, _ ->
             snapshot?.data?.let { data ->
                 name.value = data["name"] as? String ?: name.value
@@ -770,4 +780,132 @@ class UserData(context: Context) : ViewModel() {
         }
     }
 }
+
+data class Event(
+    var name: String,
+    var date: LocalDate,
+    var color: Color = Color(0xFFADD8E6),
+    val id: UUID = UUID.randomUUID(),
+    val docId: String = ""
+)
+
+data class EventDTO(
+    val name: String = "",
+    val date: String = "",
+    val color: Long = 0xFFADD8E6L,
+    val id: String = ""
+) {
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun toEvent(): Event {
+        return Event(
+            name = name,
+            date = LocalDate.parse(date),
+            color = Color(color.toULong()),
+            id = UUID.fromString(id)
+        )
+    }
+
+    companion object {
+        fun fromEvent(event: Event): EventDTO {
+            return EventDTO(
+                name = event.name,
+                date = event.date.toString(),
+                color = event.color.value.toLong(),
+                id = event.id.toString()
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+class EnrichmentData(application: Application) : AndroidViewModel(application) {
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
+    private val _events = MutableStateFlow<List<Event>>(emptyList())
+    val events: StateFlow<List<Event>> = _events.asStateFlow()
+
+    private val _totalEvents = MutableStateFlow(0)
+    val totalEvents: StateFlow<Int> = _totalEvents.asStateFlow()
+
+    private val uid: String?
+        get() = auth.currentUser?.uid
+
+    init {
+        loadEnrichmentEvents()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun loadEnrichmentEvents() {
+        uid?.let { userId ->
+            db.collection("users").document(userId)
+                .collection("enrichments")
+                .addSnapshotListener { snapshot, _ ->
+                    snapshot?.let {
+                        val loadedEvents = it.documents.mapNotNull { doc ->
+                            doc.toObject(EventDTO::class.java)
+                                ?.toEvent()
+                                ?.copy(docId = doc.id) // attach Firestore doc ID
+                        }
+                        _events.value = loadedEvents
+                        _totalEvents.value = loadedEvents.size
+                    }
+                }
+        }
+    }
+
+    fun addEnrichmentEvent(event: Event, onComplete: (Boolean) -> Unit) {
+        uid?.let { userId ->
+            val eventDTO = EventDTO.fromEvent(event)
+            db.collection("users").document(userId)
+                .collection("enrichments")
+                .add(eventDTO)
+                .addOnSuccessListener { onComplete(true) }
+                .addOnFailureListener { onComplete(false) }
+        } ?: onComplete(false)
+    }
+
+    fun updateEnrichmentEvent(index: Int, updatedEvent: Event, onComplete: (Boolean) -> Unit) {
+        val eventList = _events.value
+        val docId = eventList.getOrNull(index)?.docId
+
+        if (uid != null && docId != null) {
+            val eventDTO = EventDTO.fromEvent(updatedEvent.copy(id = UUID.fromString(eventList[index].id.toString())))
+            db.collection("users").document(uid!!)
+                .collection("enrichments")
+                .document(docId)
+                .set(eventDTO)
+                .addOnSuccessListener { onComplete(true) }
+                .addOnFailureListener { onComplete(false) }
+        } else {
+            onComplete(false)
+        }
+    }
+
+    fun removeEnrichmentEvent(index: Int, onComplete: (Boolean) -> Unit = {}) {
+        val eventList = _events.value
+        val docId = eventList.getOrNull(index)?.docId
+        if (uid != null && docId != null) {
+            db.collection("users").document(uid!!)
+                .collection("enrichments")
+                .document(docId)
+                .delete()
+                .addOnSuccessListener { onComplete(true) }
+                .addOnFailureListener { onComplete(false) }
+        } else {
+            onComplete(false)
+        }
+    }
+}
+
+object Colours {
+    val text: Color
+        @Composable get() = MaterialTheme.colorScheme.onBackground
+
+    val background: Color
+        @Composable get() = MaterialTheme.colorScheme.background
+}
+
+
+
 

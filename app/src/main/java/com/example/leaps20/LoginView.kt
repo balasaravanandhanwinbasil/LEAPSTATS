@@ -7,6 +7,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Stairs
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -20,8 +22,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.leaps20.ui.theme.LoginBlue
 import kotlinx.coroutines.launch
 
 @Composable
@@ -37,52 +41,94 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 32.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            imageVector = Icons.Default.Stairs,
-            contentDescription = "App Icon",
+
+        Box(
             modifier = Modifier
-                .size(80.dp)
-                .align(Alignment.CenterHorizontally)
+                .size(120.dp)
+                .background(
+                    LoginBlue.copy(alpha = 0.15f),
+                    shape = MaterialTheme.shapes.large
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Stairs,
+                contentDescription = null,
+                tint = LoginBlue,
+                modifier = Modifier.size(60.dp)
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Text(
+            text = "LEAPSTATS",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
         )
 
-        Text("LEAPSTATS", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.align(Alignment.CenterHorizontally))
-        Text("By CodeX", style = MaterialTheme.typography.bodySmall, color = Color.Gray, modifier = Modifier.align(Alignment.CenterHorizontally))
+        Spacer(Modifier.height(8.dp))
 
-        Spacer(Modifier.height(32.dp))
+        Text(
+            text = "Leap to success",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(40.dp))
 
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+            placeholder = { Text("Email") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent
+            )
         )
+
+        Spacer(Modifier.height(12.dp))
 
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
+            placeholder = { Text("Password") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation =
+                if (isPasswordVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
             trailingIcon = {
-                val icon = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                    Icon(imageVector = icon, contentDescription = "Toggle Password")
+                TextButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                    Text("Show", color = LoginBlue)
                 }
-            }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent
+            )
         )
 
-        if (loginError != null) {
-            Text(loginError ?: "", color = Color.Red, style = MaterialTheme.typography.bodySmall)
+        loginError?.let {
+            Spacer(Modifier.height(8.dp))
+            Text(it, color = MaterialTheme.colorScheme.error)
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(24.dp))
 
         Button(
             onClick = {
@@ -103,19 +149,24 @@ fun LoginScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp)
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = LoginBlue,
+                contentColor = Color.White
+            ),
+            shape = MaterialTheme.shapes.medium
         ) {
-            Text("Login", color = Color.White)
+            Text("Login", style = MaterialTheme.typography.bodyLarge)
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
 
-        Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Text("Don't have an account?", color = Color.Gray)
-            Spacer(modifier = Modifier.width(4.dp))
+        Row {
+            Text("Don't have an account?", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.width(4.dp))
             Text(
                 "Sign Up",
-                color = Color.Blue,
+                color = LoginBlue,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable {
                     navController.navigate("signup")
@@ -124,6 +175,7 @@ fun LoginScreen(
         }
     }
 }
+
 
 @Composable
 fun SignUpScreen(
@@ -138,45 +190,94 @@ fun SignUpScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 32.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Create Account", style = MaterialTheme.typography.headlineMedium)
 
-        Spacer(Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .background(
+                    LoginBlue.copy(alpha = 0.15f),
+                    shape = MaterialTheme.shapes.large
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.PersonAdd,
+                contentDescription = null,
+                tint = LoginBlue,
+                modifier = Modifier.size(60.dp)
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Text(
+            "Create Account",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Spacer(Modifier.height(32.dp))
 
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Name") },
+            placeholder = { Text("Name") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent
+            )
         )
+
+        Spacer(Modifier.height(12.dp))
 
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+            placeholder = { Text("Email") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent
+            )
         )
+
+        Spacer(Modifier.height(12.dp))
 
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
+            placeholder = { Text("Password") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent
+            )
         )
 
-        if (signUpError != null) {
-            Text(signUpError ?: "", color = Color.Red, style = MaterialTheme.typography.bodySmall)
+        signUpError?.let {
+            Spacer(Modifier.height(8.dp))
+            Text(it, color = MaterialTheme.colorScheme.error)
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(24.dp))
 
         Button(
             onClick = {
@@ -197,19 +298,23 @@ fun SignUpScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp)
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = LoginBlue,
+                contentColor = Color.White
+            )
         ) {
-            Text("Sign Up", color = Color.White)
+            Text("Sign Up", style = MaterialTheme.typography.bodyLarge)
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
 
-        Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Text("Already have an account?", color = Color.Gray)
-            Spacer(modifier = Modifier.width(4.dp))
+        Row {
+            Text("Already have an account?", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.width(4.dp))
             Text(
                 "Login",
-                color = Color.Blue,
+                color = LoginBlue,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable {
                     navController.navigate("login") {

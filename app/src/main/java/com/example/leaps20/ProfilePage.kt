@@ -4,8 +4,11 @@ import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,10 +18,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -44,78 +51,152 @@ fun ProfileView(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("My Profile") },
+                title = {
+                    Text("My Profile",
+                        fontWeight = FontWeight.Bold,
+                        color = Colours.text
+                    ) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = Colours.text
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = { showEditSheet = true }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit")
-                    }
-                }
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Colours.background
+                )
             )
-        }
+        },
+        containerColor = Colours.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
+                .background(Colours.background)
         ) {
-            Spacer(Modifier.height(16.dp))
-
-            ProfileImageView(
-                imageData = profileImageData,
-                modifier = Modifier
-                    .size(200.dp)
-                    .clip(CircleShape)
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            Text(
-                text = name,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = "Class of $year",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            ProfileHexagonView(
-                title = house,
-                color = backColorHouse(house)
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            ProfileHexagonView(
-                title = cca,
-                color = backColorCCA(cca)
-            )
-
-            Spacer(Modifier.weight(1f))
-
-            Button(
-                onClick = { showLogoutDialog = true },
-                // Removed containerColor override to avoid background override
+            // --- Profile Header ---
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .background(Colours.background),
+                contentAlignment = Alignment.Center
             ) {
-                Text("Logout", color = Color.Red, fontWeight = FontWeight.Bold)
+                Box {
+                    ProfileImageView(
+                        imageData = profileImageData,
+                        modifier = Modifier
+                            .size(150.dp)
+                            .clip(CircleShape)
+                    )
+                    IconButton(
+                        onClick = { showEditSheet = true },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(36.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
 
+            Spacer(Modifier.height(16.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Colours.text
+                )
+                Text(
+                    text = "Class of $year",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Gray
+                )
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Column (
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    Text("House:",
+                        color = Colours.text,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    ProfileHexagonView(
+                        title = house,
+                        color = backColorHouse(house),
+                        modifier = Modifier.size(140.dp)
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    Text("CCA:",
+                        color = Colours.text,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    ProfileHexagonView(
+                        title = cca,
+                        color = backColorCCA(cca),
+                        modifier = Modifier.size(140.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(100.dp))
+
+            // --- Logout Button ---
+            Button(
+                onClick = { showLogoutDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "Logout",
+                    color = Color.Red,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
+
+            // --- Logout Dialog ---
             if (showLogoutDialog) {
                 AlertDialog(
                     onDismissRequest = { showLogoutDialog = false },
@@ -126,9 +207,7 @@ fun ProfileView(
                                 userManager.logout()
                                 showLogoutDialog = false
                             }
-                        ) {
-                            Text("Logout", color = Color.Red)
-                        }
+                        ) { Text("Logout", color = Color.Red) }
                     },
                     dismissButton = {
                         TextButton(onClick = { showLogoutDialog = false }) {
@@ -137,17 +216,21 @@ fun ProfileView(
                     }
                 )
             }
-        }
 
-        if (showEditSheet) {
-            EditView(
-                userData = userData,
-                onDismiss = { showEditSheet = false },
-                userManager = userManager
-            )
+            // --- Edit Sheet ---
+            if (showEditSheet) {
+                EditView(
+                    userData = userData,
+                    onDismiss = { showEditSheet = false },
+                    userManager = userManager
+                )
+            }
+
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
+
 
 @Composable
 fun ProfileImageView(imageData: ByteArray?, modifier: Modifier = Modifier) {
@@ -170,14 +253,12 @@ fun ProfileImageView(imageData: ByteArray?, modifier: Modifier = Modifier) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditView(
     userData: UserData,
     onDismiss: () -> Unit,
     userManager: UserManager
 ) {
-    val yearRange = (2025..2222).map { it.toString() }
     val houseOptions = listOf("Red", "Blue", "Green", "Yellow", "Black")
     val ccaOptions = listOf(
         "ARC", "Astronomy", "Media", "Robotics", "SYFC", "Drama",
@@ -189,6 +270,7 @@ fun EditView(
     var year by remember { mutableStateOf(userData.year.value.toString()) }
     var house by remember { mutableStateOf(userData.house.value) }
     var cca by remember { mutableStateOf(userData.cca.value) }
+    var yearError by remember { mutableStateOf<String?>(null) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -214,15 +296,36 @@ fun EditView(
 
                 Spacer(Modifier.height(12.dp))
 
-                DropdownSelector(
-                    label = "Graduation Year",
-                    options = yearRange,
-                    selected = year,
-                    onSelectedChange = { year = it },
-                    backgroundColor = Color.LightGray, // keep for dropdown clarity
-                    contentColor = Color.Black,
-                    modifier = Modifier.fillMaxWidth()
+                // Graduation year as TextField with restrictions
+                OutlinedTextField(
+                    value = year,
+                    onValueChange = { input ->
+                        // Allow only digits, max length 4
+                        if (input.length <= 4 && input.all { it.isDigit() }) {
+                            year = input
+
+                            // Validate year range if input not empty
+                            yearError = if (input.isNotEmpty()) {
+                                val yearInt = input.toInt()
+                                if (yearInt in 2000..2100) null else "Year must be between 2000 and 2100"
+                            } else null
+                        }
+                    },
+                    label = { Text("Graduation Year") },
+                    isError = yearError != null,
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                    textStyle = LocalTextStyle.current.copy(fontSize = 18.sp)
                 )
+                if (yearError != null) {
+                    Text(
+                        text = yearError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.align(Alignment.Start)
+                    )
+                }
 
                 Spacer(Modifier.height(12.dp))
 
@@ -231,7 +334,7 @@ fun EditView(
                     options = houseOptions,
                     selected = house,
                     onSelectedChange = { house = it },
-                    backgroundColor = backColorHouse(house), // keep for meaningful color
+                    backgroundColor = backColorHouse(house),
                     contentColor = Color.White,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -243,7 +346,7 @@ fun EditView(
                     options = ccaOptions,
                     selected = cca,
                     onSelectedChange = { cca = it },
-                    backgroundColor = backColorCCA(cca), // keep for meaningful color
+                    backgroundColor = backColorCCA(cca),
                     contentColor = Color.White,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -260,18 +363,22 @@ fun EditView(
                     Spacer(Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            userData.name.value = name
-                            userData.year.value = year.toIntOrNull() ?: userData.year.value
-                            userData.house.value = house
-                            userData.cca.value = cca
+                            // Only save if no errors
+                            if (yearError == null) {
+                                userData.name.value = name
+                                userData.year.value = year.toIntOrNull() ?: userData.year.value
+                                userData.house.value = house
+                                userData.cca.value = cca
 
-                            userData.saveField("name", name)
-                            userData.saveField("year", userData.year.value)
-                            userData.saveField("house", house)
-                            userData.saveField("cca", cca)
-                            userData.saveLocal()
-                            onDismiss()
-                        }
+                                userData.saveField("name", name)
+                                userData.saveField("year", userData.year.value)
+                                userData.saveField("house", house)
+                                userData.saveField("cca", cca)
+                                userData.saveLocal()
+                                onDismiss()
+                            }
+                        },
+                        enabled = yearError == null
                     ) {
                         Text("Save")
                     }
@@ -282,25 +389,35 @@ fun EditView(
 }
 
 
+
 @Composable
-fun ProfileHexagonView(title: String, color: Color) {
-    Box(
-        modifier = Modifier
-            .size(169.dp)
-            .clip(HexagonShape())
-            .background(color), // keep for meaningful visual
-        contentAlignment = Alignment.Center
+fun ProfileHexagonView(
+    title: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.size(140.dp),
+        shape = HexagonShape(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = color)
     ) {
-        Text(
-            text = title,
-            color = Color.White,
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(8.dp),
-            maxLines = 2,
-            fontSize = 22.sp
-        )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = title,
+                color = Color.White,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(8.dp),
+                maxLines = 2,
+                fontSize = 22.sp
+            )
+        }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

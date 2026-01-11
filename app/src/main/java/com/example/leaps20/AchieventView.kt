@@ -26,13 +26,17 @@ fun AchievementsView(
     navController: NavHostController,
     achievementsData: AchievementsData = viewModel()
 ) {
-    AchievementsAwardsView(
-        navController = navController,
-        achievementsData = achievementsData,
-        onBack = {
-            // No back navigation for now, as requested
-        }
-    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        AchievementsAwardsView(
+            navController = navController,
+            achievementsData = achievementsData,
+            onBack = {}
+        )
+    }
 }
 
 @Composable
@@ -77,14 +81,15 @@ fun AchievementsAwardsView(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .verticalScroll(rememberScrollState())
+                .background(MaterialTheme.colorScheme.background),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             SectionHeader(
                 title = "Achievements",
                 subtitle = "Level: $level",
                 icon = Icons.Default.EmojiEvents,
-                navController = navController
+                navController = navController,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -117,7 +122,11 @@ fun AchievementsAwardsView(
                                         editingIndex = colIndex * 2
                                         showDialog = true
                                     }
-                                    .border(2.dp, Color.Black, shape = HexagonShape())
+                                    .border(
+                                        2.dp,
+                                        MaterialTheme.colorScheme.outline,
+                                        shape = HexagonShape()
+                                    )
                             )
                         }
                 }
@@ -146,13 +155,17 @@ fun AchievementsAwardsView(
                                         editingIndex = colIndex * 2 + 1
                                         showDialog = true
                                     }
-                                    .border(2.dp, Color.Black, shape = HexagonShape())
+                                    .border(
+                                        2.dp,
+                                        MaterialTheme.colorScheme.outline,
+                                        shape = HexagonShape()
+                                    )
                             )
                         }
                 }
             }
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(55.dp))
 
             AddAchievementHexagon(
                 modifier = Modifier
@@ -161,7 +174,11 @@ fun AchievementsAwardsView(
                         resetForm()
                         showDialog = true
                     }
-                    .border(2.dp, Color.Black, shape = HexagonShape()),
+                    .border(
+                        2.dp,
+                        MaterialTheme.colorScheme.outline,
+                        shape = HexagonShape()
+                    ),
                 onClick = {
                     resetForm()
                     showDialog = true
@@ -268,7 +285,7 @@ fun AchievementFormDialog(
 
     AlertDialog(
         onDismissRequest = onCancel,
-        title = { Text(if (awardName.isEmpty()) "Add Achievement" else "Edit Achievement") },
+        title = { Text(if (awardName.isEmpty()) "Add Achievement" else awardName) },
         text = {
             Column {
                 OutlinedTextField(
@@ -312,7 +329,7 @@ fun AchievementFormDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 DropdownWithHeader(
-                    label = "Years",
+                    label = "Years in Competition",
                     options = yearOptions,
                     selectedOption = selectedYears,
                     onOptionSelected = {
@@ -349,7 +366,7 @@ fun AchievementFormDialog(
                     }
                 }
                 TextButton(onClick = onCancel) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.error)
+                    Text("Close", color = MaterialTheme.colorScheme.error)
                 }
             }
         }
@@ -363,7 +380,7 @@ fun DropdownWithHeader(
     label: String,
     options: List<String>,
     selectedOption: String,
-    onOptionSelected: (String) -> Unit
+    onOptionSelected: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -426,7 +443,11 @@ fun AchievementHexagon(
     HexagonShapeBox(
         color = color,
         modifier = modifier.size(150.dp, 160.dp)
-            .border(2.dp, Color.Black, shape = HexagonShape())
+            .border(
+                2.dp,
+                MaterialTheme.colorScheme.outline,
+                shape = HexagonShape()
+            )
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -455,17 +476,17 @@ fun AchievementHexagon(
 @Composable
 fun AddAchievementHexagon(modifier: Modifier = Modifier, onClick: () -> Unit) {
     HexagonShapeBox(
-        color = Color(0xFFE0E0E0),
+        color = MaterialTheme.colorScheme.surfaceVariant,
         modifier = modifier
             .size(150.dp, 160.dp)
             .clickable(onClick = onClick)
-            .border(2.dp, Color.Black, shape = HexagonShape())
+            .border(2.dp, MaterialTheme.colorScheme.outline, shape = HexagonShape())
     ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+        Box(contentAlignment = Alignment.Center) {
             Text(
                 "+ New",
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = MaterialTheme.typography.headlineMedium.fontSize
             )
         }
