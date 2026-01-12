@@ -406,7 +406,7 @@ fun HomeView(
                     TextButton(
                         onClick = { navController.navigate("help") },
                         modifier = Modifier
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .padding(horizontal = 2.dp, vertical = 2.dp)
                             .background(
                                 lerp(Colours.background, Color.Gray, 0.35f).copy(alpha = 0.6f),
                                 shape = RoundedCornerShape(12.dp)
