@@ -564,7 +564,8 @@ fun HexagonButton(
             Text(
                 text = stat,
                 color = textColor,
-                style = MaterialTheme.typography.titleMedium,
+                fontSize = statFontSize,
+                lineHeight = statFontSize * 1.1f,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
