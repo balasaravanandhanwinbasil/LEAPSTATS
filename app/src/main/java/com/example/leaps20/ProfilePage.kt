@@ -3,6 +3,7 @@ package com.example.leaps20
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -149,7 +150,9 @@ fun ProfileView(
                     ProfileHexagonView(
                         title = house,
                         color = backColorHouse(house),
-                        modifier = Modifier.size(140.dp)
+                        modifier = Modifier
+                            .size(140.dp)
+                            .background(color = MaterialTheme.colorScheme.surfaceVariant, shape = HexagonShape())
                     )
                 }
 
@@ -169,7 +172,9 @@ fun ProfileView(
                     ProfileHexagonView(
                         title = cca,
                         color = backColorCCA(cca),
-                        modifier = Modifier.size(140.dp)
+                        modifier = Modifier
+                            .size(140.dp)
+                            .background(color = MaterialTheme.colorScheme.surfaceVariant, shape = HexagonShape())
                     )
                 }
             }
