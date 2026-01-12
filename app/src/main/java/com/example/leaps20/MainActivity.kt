@@ -520,6 +520,7 @@ fun HomeView(
 }
 
 
+
 @Composable
 fun HexagonButton(
     title: String,
@@ -530,6 +531,8 @@ fun HexagonButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    var statFontSize by remember { mutableStateOf(16.sp) }
+
     Box(
         modifier = modifier
             .size(130.dp)
@@ -565,7 +568,12 @@ fun HexagonButton(
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                onTextLayout = { result ->
+                    if (result.hasVisualOverflow && statFontSize > 11.sp) {
+                        statFontSize *= 0.9f
+                    }
+                }
             )
         }
     }

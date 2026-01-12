@@ -157,7 +157,9 @@ fun ServiceHoursView(
                                     modifier = Modifier.padding(start = 16.dp, top = 2.dp)
                                 )
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Spacer(modifier = Modifier.height(32.dp))
+
                             Text(
                                 text = "Select Hours Spent",
                                 style = MaterialTheme.typography.labelSmall
@@ -193,7 +195,8 @@ fun ServiceHoursView(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(32.dp))
+
                             DropdownWithHeader(
                                 label = "Service Type",
                                 options = serviceTypes,

@@ -57,16 +57,16 @@ fun LEAPSApp(
         composable("info") {
             InfoView(
                 onNavigate = { route -> nestedNavController.navigate(route) },
-                navControllerForBack = outerNavController
+                navControllerForBack = nestedNavController
             )
         }
-        composable("leadership") { LeadershipInfoView(outerNavController) }
-        composable("achievement") { AchievementInfoView(outerNavController) }
-        composable("participation") { ParticipationInfoView(outerNavController) }
-        composable("service") { ServiceInfoView(outerNavController) }
+        composable("leadership") { LeadershipInfoView(nestedNavController) }
+        composable("achievement") { AchievementInfoView(nestedNavController) }
+        composable("participation") { ParticipationInfoView(nestedNavController) }
+        composable("service") { ServiceInfoView(nestedNavController) }
         composable("attainment") {
             AttainmentView(
-                navController = outerNavController,
+                navController = nestedNavController,
                 userData = userData,
                 leadershipData = leadershipData,
                 participationData = participationData,
@@ -159,12 +159,14 @@ fun InfoView(
             ) {
                 Box(
                     modifier = Modifier
-                        .padding(16.dp)
+                        .width(330.dp)
+                        .height(120.dp)
                         .background(
                             color = MaterialTheme.colorScheme.surfaceVariant,
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(16.dp)
                         )
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .clickable { onNavigate("attainment") },
+                    contentAlignment = Alignment.Center
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -172,10 +174,10 @@ fun InfoView(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            "Level of Attainment",
+                            text = "Level of Attainment",
                             fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Icon(

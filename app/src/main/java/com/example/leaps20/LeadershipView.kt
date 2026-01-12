@@ -243,8 +243,8 @@ fun LeadershipPositionSheet(
                 LeadershipData.allCategories.forEach { category ->
                     Text(
                         category,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(vertical = 12.dp)
                     )
 
                     LeadershipData.getPositionsForCategory(category).forEach { item ->
