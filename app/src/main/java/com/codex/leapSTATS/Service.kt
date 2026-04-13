@@ -1,4 +1,4 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -128,7 +128,7 @@ fun ServiceHoursView(
                 }
             }
 
-            Spacer(modifier = Modifier.height(55.dp))
+            Spacer(modifier = Modifier.height(65.dp))
 
             AddAchievementHexagon(
                 onClick = {

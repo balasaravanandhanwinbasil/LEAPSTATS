@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.leaps20"
+    namespace = "com.codex.leapSTATS"
     compileSdk = 36
 
     defaultConfig {
@@ -41,7 +41,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

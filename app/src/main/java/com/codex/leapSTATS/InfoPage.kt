@@ -1,4 +1,4 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
 import android.app.Application
 import androidx.compose.foundation.background
@@ -28,20 +28,16 @@ import androidx.core.view.ViewCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.core.view.WindowInsetsCompat.Type
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.leaps20.ui.theme.LeapsBlue
 
 val DarkBlue1 = Color(0xFF00497A)
 val DarkerBlue1 = Color(0xFF003D6B)
 val LightBlue1 = Color(0xFF5C7ACC)
-
-val backgroundColour = Color(0xFFB0E0E6).copy(alpha = 0.5f)
 
 @Composable
 fun LEAPSApp(
@@ -57,7 +53,7 @@ fun LEAPSApp(
         composable("info") {
             InfoView(
                 onNavigate = { route -> nestedNavController.navigate(route) },
-                navControllerForBack = nestedNavController
+                navControllerForBack = outerNavController
             )
         }
         composable("leadership") { LeadershipInfoView(nestedNavController) }
@@ -90,7 +86,7 @@ fun TopAppBarWithBackButton(
                 Icon(
                     Icons.Default.Lightbulb,
                     contentDescription = "icon",
-                    tint = LeapsBlue,
+                    tint = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -153,7 +149,10 @@ fun InfoView(
                 modifier = Modifier
                     .width(330.dp)
                     .height(120.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(16.dp)
+                    )
                     .clickable { onNavigate("attainment") },
                 contentAlignment = Alignment.Center
             ) {
@@ -200,7 +199,7 @@ fun InfoCard(
     backgroundColor: Color,
     onClick: () -> Unit
 ) {
-    val textColor = contentColorFor(backgroundColor)
+    val textColor = Color.White
 
     Column(
         modifier = Modifier
@@ -281,7 +280,6 @@ fun AttainmentView(
     participationData: ParticipationData = viewModel(),
     achievementsData: AchievementsData = viewModel()
 ) {
-    // Get current levels from each data class
     val leadershipLevel by leadershipData.currentLevel.collectAsState()
     val serviceLevel by serviceData.level.collectAsState(initial = "0")
 
@@ -365,9 +363,26 @@ fun AttainmentView(
     fun DomainLevelCard(
         domain: String,
         level: Comparable<*>,
-        explanations: List<String>,
-        borderColor: Color
+        explanations: List<String>
     ) {
+        val levelInt = when (level) {
+            is Int -> level
+            is Number -> level.toInt()
+            is String -> level.toIntOrNull() ?: 0
+            else -> 0
+        }
+
+
+        val borderColor = when (levelInt) {
+            0 -> Color.Gray
+            1 -> Color.Red
+            2 -> Color(0xFFFF9800)
+            3 -> Color.Green
+            4 -> Color(0xFFB3E5FC)
+            5 -> Color(0xFF03A9F4)
+            else -> Color.Black
+        }
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -417,37 +432,49 @@ fun AttainmentView(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            Text(
-                "$attainmentState: $points Point${if (points == 1) "" else "s"}",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = attainmentColor,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    "Your LEAPS:",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Start
+                )
+
+                Text(
+                    "$points Point${if (points == 1) "" else "s"}",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = attainmentColor,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.End
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             DomainLevelCard(
                 domain = "Leadership",
                 level = leadershipLevel,
-                explanations = leadershipExplanations,
-                borderColor = DarkBlue1
+                explanations = leadershipExplanations
             )
             DomainLevelCard(
                 domain = "Service",
                 level = serviceLevel,
-                explanations = serviceExplanations,
-                borderColor = Color(0xFF034A9E)
+                explanations = serviceExplanations
             )
             DomainLevelCard(
                 domain = "Participation",
                 level = participationLevel,
-                explanations = participationExplanations,
-                borderColor = DarkerBlue1
+                explanations = participationExplanations
             )
             DomainLevelCard(
                 domain = "Achievements",
                 level = achievementsLevel,
-                explanations = achievementsExplanations,
-                borderColor = LightBlue1
+                explanations = achievementsExplanations
             )
         }
     }
@@ -477,7 +504,8 @@ fun InfoDetailScreen(
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(12.dp))
             Surface(
@@ -502,7 +530,7 @@ fun InfoDetailScreen(
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 12.dp)
+                contentPadding = PaddingValues(bottom = 12.dp),
             ) {
                 items(levels) { (title, desc) ->
                     LevelCard(title, desc)
@@ -519,12 +547,7 @@ fun LevelCard(title: String, description: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { expanded = !expanded }
-            .shadow(
-                elevation = 12.dp,
-                shape = RoundedCornerShape(12.dp),
-                clip = false
-            ),
+            .clickable { expanded = !expanded },
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(12.dp)
     ) {

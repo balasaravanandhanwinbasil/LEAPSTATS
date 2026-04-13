@@ -1,4 +1,4 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

@@ -1,4 +1,4 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,7 +8,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -165,7 +164,7 @@ fun AchievementsAwardsView(
                 }
             }
 
-            Spacer(modifier = Modifier.height(55.dp))
+            Spacer(modifier = Modifier.height(65.dp))
 
             AddAchievementHexagon(
                 modifier = Modifier
@@ -198,6 +197,7 @@ fun AchievementsAwardsView(
                 onSelectedYearsChange = { selectedYears = it },
                 selectedAwards = selectedAwards,
                 onSelectedAwardsChange = { selectedAwards = it },
+                isEditing = editingIndex != null,
                 onSave = {
                     if (awardName.isNotBlank()) {
                         showDialog = false
@@ -267,7 +267,8 @@ fun AchievementFormDialog(
     expandedYear: Boolean,
     onExpandedYearChange: (Boolean) -> Unit,
     expandedAward: Boolean,
-    onExpandedAwardChange: (Boolean) -> Unit
+    onExpandedAwardChange: (Boolean) -> Unit,
+    isEditing: Boolean
 ) {
     val typeOptions = listOf("Competition", "Event", "SYF")
     val representationOptions = listOf(
@@ -285,7 +286,7 @@ fun AchievementFormDialog(
 
     AlertDialog(
         onDismissRequest = onCancel,
-        title = { Text(if (awardName.isEmpty()) "Add Achievement" else awardName) },
+        title = { Text(if (isEditing) awardName else "Award Name") },
         text = {
             Column {
                 OutlinedTextField(
@@ -355,12 +356,12 @@ fun AchievementFormDialog(
                 onClick = onSave,
                 enabled = awardName.isNotBlank()
             ) {
-                Text(if (awardName.isEmpty()) "Add" else "Update")
+                Text(if (isEditing) "Update" else "Add")
             }
         },
         dismissButton = {
             Row {
-                if (awardName.isNotEmpty()) {
+                if (isEditing) {
                     TextButton(onClick = onDelete) {
                         Text("Delete", color = MaterialTheme.colorScheme.error)
                     }

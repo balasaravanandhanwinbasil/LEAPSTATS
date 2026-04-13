@@ -1,9 +1,9 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
 import android.graphics.BitmapFactory
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -19,11 +19,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,7 +44,11 @@ fun ProfileView(
     val profileImageData by userData.profileImageData.collectAsState()
 
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     var showEditSheet by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -216,6 +217,56 @@ fun ProfileView(
                     },
                     dismissButton = {
                         TextButton(onClick = { showLogoutDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
+            // --- Delete Account Button ---
+            Spacer(Modifier.height(12.dp))
+
+            Button(
+                onClick = { showDeleteDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "Delete Account",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
+
+            // --- Delete Account Dialog ---
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text("Delete Account") },
+                    text = { Text("Are you sure you want to delete your account? This action cannot be undone.") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                userManager.deleteAccount { result ->
+                                    result.fold(
+                                        onSuccess = { showDeleteDialog = false },
+                                        onFailure = {
+                                            Toast.makeText(context, "Deletion Failed!", Toast.LENGTH_SHORT)
+                                        }
+                                    )
+                                }
+                            }
+                        ) { Text("Delete", color = Color.Red) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDeleteDialog = false }) {
                             Text("Cancel")
                         }
                     }

@@ -1,4 +1,4 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
 import android.widget.Toast
 import android.widget.Toast.makeText

@@ -1,6 +1,5 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,7 +10,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -277,23 +275,34 @@ fun LeadershipPositionSheet(
             }
         },
         confirmButton = {
-            TextButton(
-                enabled = selectedPosition.isNotEmpty(),
-                onClick = {
-                    if (editingIndex != null)
-                        dataManager.updateLeadershipPosition(
-                            editingIndex, selectedPosition, selectedYear
-                        )
-                    else
-                        dataManager.addLeadershipPosition(
-                            selectedPosition, selectedYear
-                        )
+            Row {
+                TextButton(
+                    onClick = {
+                        dataManager.removeLeadershipPosition(editingIndex!!)
 
-                    onEditingIndexChange(null)
-                    onShowSheetChange(false)
+                        onShowSheetChange(false)
+                    }
+                ) {
+                    Text("Delete", color = Color.Red)
                 }
-            ) {
-                Text(if (editingIndex != null) "Update" else "Add")
+                TextButton(
+                    enabled = selectedPosition.isNotEmpty(),
+                    onClick = {
+                        if (editingIndex != null)
+                            dataManager.updateLeadershipPosition(
+                                editingIndex, selectedPosition, selectedYear
+                            )
+                        else
+                            dataManager.addLeadershipPosition(
+                                selectedPosition, selectedYear
+                            )
+
+                        onEditingIndexChange(null)
+                        onShowSheetChange(false)
+                    }
+                ) {
+                    Text(if (editingIndex != null) "Update" else "Add")
+                }
             }
         },
         dismissButton = {

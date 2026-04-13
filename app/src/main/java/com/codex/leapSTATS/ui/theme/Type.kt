@@ -1,4 +1,4 @@
-package com.example.leaps20.ui.theme
+package com.codex.leapSTATS.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

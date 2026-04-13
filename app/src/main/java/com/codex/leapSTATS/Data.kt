@@ -1,11 +1,10 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
 import android.app.Application
 import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,37 +28,52 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.Color
 import java.time.LocalDate
-import java.time.LocalDate.parse
 import java.util.UUID
-
 
 // USER MANAGER
 
-class UserManager private constructor() : ViewModel() {
+
+class UserManager private constructor() {
     companion object {
         val shared: UserManager by lazy { UserManager() }
     }
 
-    private val auth = FirebaseAuth.getInstance()
+    internal val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
-    var currentUserID by mutableStateOf<String?>(null)
-    var currentUserEmail by mutableStateOf<String?>(null)
-    var currentUserName by mutableStateOf<String?>(null)
+    // Auth readiness (prevents premature navigation)
+    private val _authReady = mutableStateOf(false)
+    val authReady: State<Boolean> get() = _authReady
 
-    // Backing mutable state (private)
+    // Compose-friendly login state
     private val _isLoggedIn = mutableStateOf(false)
-
-    // Public read-only state (exposed to Compose)
     val isLoggedIn: State<Boolean> get() = _isLoggedIn
 
+    // User info
+    var currentUserID: String? = null
+        private set
+    var currentUserEmail: String? = null
+        private set
+    var currentUserName: String? = null
+        private set
+
     init {
-        val user = auth.currentUser
-        if (user != null) {
-            currentUserID = user.uid
-            currentUserEmail = user.email
-            _isLoggedIn.value = true
-            fetchUserName(user.uid)
+        auth.addAuthStateListener { firebaseAuth ->
+            val user = firebaseAuth.currentUser
+
+            if (user != null) {
+                currentUserID = user.uid
+                currentUserEmail = user.email
+                _isLoggedIn.value = true
+                fetchUserName(user.uid)
+            } else {
+                currentUserID = null
+                currentUserEmail = null
+                currentUserName = null
+                _isLoggedIn.value = false
+            }
+
+            _authReady.value = true
         }
     }
 
@@ -67,65 +81,111 @@ class UserManager private constructor() : ViewModel() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    currentUserID = user?.uid
-                    currentUserEmail = user?.email
-                    _isLoggedIn.value = true
-                    user?.uid?.let { fetchUserName(it) }
                     onResult(Result.success(Unit))
                 } else {
-                    onResult(Result.failure(task.exception ?: Exception("Unknown error")))
+                    onResult(Result.failure(task.exception ?: Exception("Login failed")))
+                }
+            }
+    }
+
+    fun signUp(
+        name: String,
+        email: String,
+        password: String,
+        onResult: (Result<Unit>) -> Unit
+    ) {
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    onResult(Result.failure(task.exception ?: Exception("Signup failed")))
+                    return@addOnCompleteListener
+                }
+
+                val user = auth.currentUser
+                if (user == null) {
+                    onResult(Result.failure(Exception("User is null after signup")))
+                    return@addOnCompleteListener
+                }
+
+                // Send email verification
+                user.sendEmailVerification()
+                    .addOnCompleteListener { verificationTask ->
+                        if (!verificationTask.isSuccessful) {
+                            onResult(Result.failure(
+                                verificationTask.exception ?: Exception("Failed to send verification email")
+                            ))
+                            return@addOnCompleteListener
+                        }
+
+                        val data = mapOf(
+                            "name" to name,
+                            "email" to email,
+                            "emailVerified" to false
+                        )
+
+                        db.collection("users").document(user.uid)
+                            .set(data)
+                            .addOnSuccessListener {
+                                auth.signOut()
+                                onResult(Result.success(Unit))
+                            }
+                            .addOnFailureListener {
+                                onResult(Result.failure(it))
+                            }
+                    }
+            }
+    }
+
+    fun resetPassword(email: String, onResult: (Result<Unit>) -> Unit) {
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onResult(Result.success(Unit))
+                } else {
+                    onResult(Result.failure(task.exception ?: Exception("Failed to send reset email")))
                 }
             }
     }
 
     fun logout() {
-        try {
-            auth.signOut()
-            _isLoggedIn.value = false
-            currentUserID = null
-            currentUserEmail = null
-            currentUserName = null
-        } catch (e: Exception) {
-            println("Logout error: ${e.localizedMessage}")
-        }
-    }
-
-    fun signUp(name: String, email: String, password: String, onResult: (Result<Unit>) -> Unit) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    currentUserID = user?.uid
-                    currentUserEmail = user?.email
-                    currentUserName = name
-
-                    user?.uid?.let { uid ->
-                        val data = mapOf("name" to name, "email" to email)
-                        db.collection("users").document(uid).set(data)
-                            .addOnSuccessListener {
-                                onResult(Result.success(Unit))
-                            }
-                            .addOnFailureListener { err ->
-                                onResult(Result.failure(err))
-                            }
-                    }
-                } else {
-                    onResult(Result.failure(task.exception ?: Exception("Unknown error")))
-                }
-            }
+        auth.signOut()
     }
 
     private fun fetchUserName(uid: String) {
         db.collection("users").document(uid).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    currentUserName = document.getString("name")
-                }
+            .addOnSuccessListener { doc ->
+                currentUserName = doc.getString("name")
+            }
+            .addOnFailureListener {
+                currentUserName = null
+            }
+    }
+
+    fun deleteAccount(onResult: (Result<Unit>) -> Unit) {
+        val user = auth.currentUser
+        val uid = currentUserID
+
+        if (user == null || uid == null) {
+            onResult(Result.failure(Exception("No user logged in")))
+            return
+        }
+
+        db.collection("users").document(uid)
+            .delete()
+            .addOnSuccessListener {
+                user.delete()
+                    .addOnSuccessListener {
+                        onResult(Result.success(Unit))
+                    }
+                    .addOnFailureListener { authError ->
+                        onResult(Result.failure(authError))
+                    }
+            }
+            .addOnFailureListener { dbError ->
+                onResult(Result.failure(dbError))
             }
     }
 }
-
 
 // LEADERSHIP
 
@@ -150,7 +210,11 @@ class LeadershipData : ViewModel() {
     private val userID: String? get() = FirebaseAuth.getInstance().currentUser?.uid
 
     init {
-        loadLeadershipPositions()
+        FirebaseAuth.getInstance().addAuthStateListener { auth ->
+            if (auth.currentUser != null) {
+                loadLeadershipPositions()
+            }
+        }
     }
 
     fun loadLeadershipPositions() {
@@ -325,8 +389,6 @@ data class Achievement(
     val year: String = ""
 )
 
-
-
 class AchievementsData : ViewModel() {
 
     var hexes = mutableStateListOf<Achievement>()
@@ -342,7 +404,11 @@ class AchievementsData : ViewModel() {
     private var listener: ListenerRegistration? = null
 
     init {
-        loadAchievements()
+        FirebaseAuth.getInstance().addAuthStateListener { auth ->
+            if (auth.currentUser != null) {
+                loadAchievements()
+            }
+        }
     }
 
     private fun uid(): String? = auth.currentUser?.uid
@@ -558,7 +624,11 @@ class ServiceData(application: Application) : AndroidViewModel(application) {
         get() = auth.currentUser?.uid
 
     init {
-        loadServiceEvents()
+        FirebaseAuth.getInstance().addAuthStateListener { auth ->
+            if (auth.currentUser != null) {
+                loadServiceEvents()
+            }
+        }
     }
 
     fun loadServiceEvents() {

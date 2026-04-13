@@ -1,32 +1,24 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Stairs
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.leaps20.ui.theme.LoginBlue
-import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -37,6 +29,16 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var loginError by remember { mutableStateOf<String?>(null) }
+    var showResetDialog by remember { mutableStateOf(false) }
+
+    val LoginBlue = MaterialTheme.colorScheme.primary
+
+    if (showResetDialog) {
+        ForgotPasswordDialog(
+            userManager = userManager,
+            onDismiss = { showResetDialog = false }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -138,9 +140,6 @@ fun LoginScreen(
                     userManager.signIn(email, password) { result ->
                         result.onSuccess {
                             loginError = null
-                            navController.navigate("home") {
-                                popUpTo("login") { inclusive = true }
-                            }
                         }.onFailure {
                             loginError = "Login failed: ${it.localizedMessage}"
                         }
@@ -152,11 +151,14 @@ fun LoginScreen(
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = LoginBlue,
-                contentColor = Color.White
+                contentColor = contentColorFor(LoginBlue)
             ),
             shape = MaterialTheme.shapes.medium
         ) {
-            Text("Login", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "Login",
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
 
         Spacer(Modifier.height(16.dp))
@@ -173,9 +175,87 @@ fun LoginScreen(
                 }
             )
         }
+
+        Spacer(Modifier.height(8.dp))
+
+        Row {
+            Text("Forgot password?", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.width(4.dp))
+            Text(
+                "Click here",
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clickable {
+                    showResetDialog = true
+                }
+            )
+        }
+
     }
 }
 
+@Composable
+fun ForgotPasswordDialog(
+    userManager: UserManager,
+    onDismiss: () -> Unit
+) {
+    var email by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf<String?>(null) }
+    var isError by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Reset Password") },
+        text = {
+            Column {
+                Text("Enter your email address and we'll send you a password reset link.")
+                Spacer(Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                message?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        it,
+                        color = if (isError) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (email.isBlank()) {
+                        message = "Please enter your email"
+                        isError = true
+                    } else {
+                        userManager.resetPassword(email) { result ->
+                            result.onSuccess {
+                                message = "Password reset email sent!"
+                                isError = false
+                            }.onFailure {
+                                message = "Failed: ${it.localizedMessage}"
+                                isError = true
+                            }
+                        }
+                    }
+                }
+            ) {
+                Text("Send Reset Link")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
 
 @Composable
 fun SignUpScreen(
@@ -186,6 +266,34 @@ fun SignUpScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var signUpError by remember { mutableStateOf<String?>(null) }
+    var showVerificationDialog by remember { mutableStateOf(false) }
+
+    if (showVerificationDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showVerificationDialog = false
+                navController.navigate("login") {
+                    popUpTo("signup") { inclusive = true }
+                }
+            },
+            title = { Text("Verify Your Email") },
+            text = {
+                Text("A verification email has been sent to $email. Please verify your email before logging in.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showVerificationDialog = false
+                        navController.navigate("login") {
+                            popUpTo("signup") { inclusive = true }
+                        }
+                    }
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -201,7 +309,7 @@ fun SignUpScreen(
             modifier = Modifier
                 .size(120.dp)
                 .background(
-                    LoginBlue.copy(alpha = 0.15f),
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                     shape = MaterialTheme.shapes.large
                 ),
             contentAlignment = Alignment.Center
@@ -209,7 +317,7 @@ fun SignUpScreen(
             Icon(
                 imageVector = Icons.Default.PersonAdd,
                 contentDescription = null,
-                tint = LoginBlue,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(60.dp)
             )
         }
@@ -287,9 +395,7 @@ fun SignUpScreen(
                     userManager.signUp(name, email, password) { result ->
                         result.onSuccess {
                             signUpError = null
-                            navController.navigate("home") {
-                                popUpTo("signup") { inclusive = true }
-                            }
+                            showVerificationDialog = true
                         }.onFailure {
                             signUpError = "Sign up failed: ${it.localizedMessage}"
                         }
@@ -300,8 +406,8 @@ fun SignUpScreen(
                 .fillMaxWidth()
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = LoginBlue,
-                contentColor = Color.White
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = contentColorFor(MaterialTheme.colorScheme.primary)
             )
         ) {
             Text("Sign Up", style = MaterialTheme.typography.bodyLarge)
@@ -314,7 +420,7 @@ fun SignUpScreen(
             Spacer(Modifier.width(4.dp))
             Text(
                 "Login",
-                color = LoginBlue,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable {
                     navController.navigate("login") {

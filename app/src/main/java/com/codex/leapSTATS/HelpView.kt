@@ -1,4 +1,4 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
 import android.content.Intent
 import android.net.Uri
@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,7 +27,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.leaps20.ui.theme.LeapsBlue
 
 data class TeamMember(
     val name: String,
@@ -40,6 +40,8 @@ fun HelpView(navController: NavHostController) {
     val darkBlue1 = Color(0xFF123456)
     val context = LocalContext.current
     val email = "codexleaps2.0@gmail.com"
+
+    val LeapsBlue = MaterialTheme.colorScheme.primary
 
     val team = listOf(
         TeamMember(
@@ -78,7 +80,7 @@ fun HelpView(navController: NavHostController) {
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text("Acknowledgements", fontWeight = FontWeight.Bold)
+                    Text("Acknowledgements & Info", fontWeight = FontWeight.Bold)
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
@@ -113,9 +115,37 @@ fun HelpView(navController: NavHostController) {
                 }
             }
             item {
+                Spacer(Modifier.padding(16.dp))
+                Column {
+                    Row {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = "danger",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "DISCLAIMER:",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Text(
+                        "The calculations MAY not be fully accurate. The most accurate version will be through the LEAPS slip given at the start of the year",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                }
+            }
+            item {
                 Spacer(modifier = Modifier.height(24.dp))
                 val annotatedText = buildAnnotatedString {
-                    append("For any problems or feedback, contact ")
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    ) {
+                        append("For any problems or feedback, contact ")
+                    }
                     pushStringAnnotation(tag = "EMAIL", annotation = "mailto:$email")
                     withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary, textDecoration = TextDecoration.Underline)) {
                         append(email)

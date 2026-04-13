@@ -1,6 +1,5 @@
-package com.example.leaps20
+package com.codex.leapSTATS
 
-import com.example.leaps20.UserData
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,17 +36,14 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Autorenew
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.HelpOutline
@@ -61,7 +57,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextDecoration
@@ -69,12 +64,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.view.WindowCompat
 import java.time.LocalDate
 import java.util.UUID
-import android.graphics.Shader
-import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.lerp
-import com.example.leaps20.ui.theme.LeapStatsTheme
-import com.example.leaps20.ui.theme.LeapsBlue
+import com.codex.leapSTATS.TeacherView.ContentView
+import com.codex.leapSTATS.ui.theme.LeapStatsTheme
+import com.google.firebase.FirebaseApp
 
 
 class ServiceDataFactory(private val application: Application) : ViewModelProvider.Factory {
@@ -98,55 +92,92 @@ class UserDataFactory(private val context: Context) : ViewModelProvider.Factory 
     }
 }
 
+class LeapApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        UserManager.shared
+    }
+}
+
+
+fun UserManager.isSSTStaff(): Boolean {
+    val email = this.auth.currentUser?.email ?: return false
+    val domain = email.substringAfter("@", "")
+    return domain.equals("sst.edu.sg", ignoreCase = true)
+}
+
+fun UserManager.getCurrentUserEmail(): String? {
+    return this.auth.currentUser?.email
+}
+
 
 class MainActivity : ComponentActivity() {
-    private val userManager = UserManager.shared
+    private lateinit var userManager: UserManager
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
+        FirebaseApp.initializeApp(this)
+
+        userManager = UserManager.shared
+
         setContent {
             val navController = rememberNavController()
-            val isUserLoggedIn by userManager.isLoggedIn
+
+            val authReady by userManager.authReady
+            val isLoggedIn by userManager.isLoggedIn
 
             val leadershipData: LeadershipData = viewModel()
             val achievementsData: AchievementsData = viewModel()
             val participationData: ParticipationData = viewModel()
-            val serviceData: ServiceData = viewModel(factory = ServiceDataFactory(application))
-            val userData: UserData = viewModel(factory = UserDataFactory(application))
+            val serviceData: ServiceData =
+                viewModel(factory = ServiceDataFactory(application))
+            val userData: UserData =
+                viewModel(factory = UserDataFactory(application))
 
-            LaunchedEffect(Unit) {
-                leadershipData.loadLeadershipPositions()
-                achievementsData.loadAchievements()
-                participationData.fetchParticipation()
-                serviceData.loadServiceEvents()
-            }
-
-            LaunchedEffect(isUserLoggedIn) {
-                if (isUserLoggedIn) {
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                } else {
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
+            // Check if user is SST staff
+            var isSSTStaff by remember { mutableStateOf(false) }
+            LaunchedEffect(isLoggedIn) {
+                if (isLoggedIn) {
+                    isSSTStaff = userManager.isSSTStaff()
                 }
             }
 
+            val startDestination = when {
+                !authReady -> "loading"
+                isLoggedIn -> "home"
+                else -> "login"
+            }
+
             LeapStatsTheme {
+                if (isLoggedIn && isSSTStaff) {
+                    ContentView()
+                } else {
+                    // Otherwise, show student view navigation
                     NavHost(
                         navController = navController,
-                        startDestination = if (isUserLoggedIn) "home" else "login"
+                        startDestination = startDestination
                     ) {
+                        composable("loading") {
+                            LoadingScreen()
+                        }
+
                         composable("login") {
-                            LoginScreen(userManager = userManager, navController = navController)
+                            LoginScreen(
+                                userManager = userManager,
+                                navController = navController
+                            )
                         }
+
                         composable("signup") {
-                            SignUpScreen(userManager = userManager, navController = navController)
+                            SignUpScreen(
+                                userManager = userManager,
+                                navController = navController
+                            )
                         }
+
                         composable("home") {
                             HomeView(
                                 navController = navController,
@@ -157,27 +188,35 @@ class MainActivity : ComponentActivity() {
                                 userData = userData
                             )
                         }
+
                         composable("profile") {
                             ProfileView(navController = navController, userData = userData)
                         }
+
                         composable("leadership") {
                             LeadershipView(navController = navController, dataManager = leadershipData)
                         }
+
                         composable("achievements") {
                             AchievementsView(navController = navController, achievementsData = achievementsData)
                         }
+
                         composable("participation") {
                             ParticipationView(navController = navController, participation = participationData)
                         }
+
                         composable("service") {
                             ServiceHoursView(navController = navController, serviceData = serviceData)
                         }
+
                         composable("enrichment") {
                             EnrichmentView(navController = navController)
                         }
+
                         composable("help") {
                             HelpView(navController = navController)
                         }
+
                         composable("info") {
                             LEAPSApp(
                                 outerNavController = navController,
@@ -188,31 +227,27 @@ class MainActivity : ComponentActivity() {
                                 serviceData = serviceData
                             )
                         }
-                    }
 
+                        composable("form") {
+                            FormView(
+                                userData = userData,
+                                navController = navController
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TopAppBarWithBackButton(title: String, navController: NavHostController) {
-    TopAppBar(
-        title = { Text(title) },
-        navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-        }
-    )
-}
 
 @Composable
 fun FrostedBottomNavigationBar(navController: NavHostController) {
     val items = listOf(
         BottomNavItem("Home", Icons.Default.Home, "home"),
         BottomNavItem("Enrichment", Icons.Default.School, "enrichment"),
+        BottomNavItem("Forms", Icons.Default.Description, "form")
     )
 
     Box(
@@ -220,6 +255,7 @@ fun FrostedBottomNavigationBar(navController: NavHostController) {
             .fillMaxWidth()
             .navigationBarsPadding()
             .padding(horizontal = 40.dp, vertical = 14.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Box(
             modifier = Modifier
@@ -297,26 +333,26 @@ fun LoadingScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 imageVector = Icons.Default.List,
                 contentDescription = "Loading Steps Icon",
-                tint = Color(0xFF03709C),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(120.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "LEAPSTATS",
+                text = "LEAPStats",
                 fontWeight = FontWeight.Bold,
                 fontSize = 32.sp,
-                color = Color(0xFF03709C)
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(16.dp))
             CircularProgressIndicator(
-                color = Color.Blue,
+                color = MaterialTheme.colorScheme.onBackground,
                 strokeWidth = 4.dp,
                 modifier = Modifier.size(48.dp)
             )
@@ -391,7 +427,7 @@ fun HomeView(
                         Icon(
                             imageVector = Icons.Default.Stairs,
                             contentDescription = null,
-                            tint = LeapsBlue
+                            tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(Modifier.width(6.dp))
                         Text(
@@ -673,7 +709,7 @@ fun SectionHeader(
                     Icon(
                         imageVector = icon,
                         contentDescription = "$title Icon",
-                        tint = LeapsBlue,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -731,7 +767,8 @@ fun EnrichmentView(navController: NavHostController) {
                         Icon(
                             imageVector = Icons.Default.School,
                             contentDescription = "Enrichment Icon",
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(28.dp),
+                            tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Enrichment", fontWeight = FontWeight.Bold)

@@ -12,7 +12,20 @@
           "package_name": "com.example.leaps20"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1028325607266-b0v9r8knj4l53arb4ldvulqnif5281jq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.leaps20",
+            "certificate_hash": "f5533f59cda668a7656c7ae76874a6469b98ec0e"
+          }
+        },
+        {
+          "client_id": "1028325607266-gm55o9epogaj1gjkj041ijq3u1q1ohug.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAeJuL7NRteptqA6Z2BlTt-a3VhKPQbqvQ"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1028325607266-gm55o9epogaj1gjkj041ijq3u1q1ohug.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1028325607266-nrcgnutrga6socgso61m2o7ej00knn53.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "VijayaganathyPavithraa-sg.projServeLeaps"
+              }
+            }
+          ]
         }
       }
     }
