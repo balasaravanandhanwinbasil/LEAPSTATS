@@ -233,24 +233,49 @@ fun ProfileView(
                     .padding(horizontal = 32.dp)
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Red
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     text = "Delete Account",
-                    color = Color.White,
+                    color = Color.Red,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
             }
 
             // --- Delete Account Dialog ---
+            var confirmUsername by remember { mutableStateOf("") }
+            val actualUsername = userManager.currentUserName ?: ""
+
             if (showDeleteDialog) {
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
                     title = { Text("Delete Account") },
-                    text = { Text("Are you sure you want to delete your account? This action cannot be undone.") },
+                    text = {
+                        Column {
+                            Text("Type your username to confirm deletion. This action cannot be undone.")
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            OutlinedTextField(
+                                value = confirmUsername,
+                                onValueChange = { confirmUsername = it },
+                                label = { Text("Username") },
+                                singleLine = true,
+                                isError = confirmUsername.isNotEmpty() && confirmUsername != actualUsername
+                            )
+
+                            if (confirmUsername.isNotEmpty() && confirmUsername != actualUsername) {
+                                Text(
+                                    text = "Username does not match",
+                                    color = Color.Red,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    },
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -258,12 +283,15 @@ fun ProfileView(
                                     result.fold(
                                         onSuccess = { showDeleteDialog = false },
                                         onFailure = {
-                                            Toast.makeText(context, "Deletion Failed!", Toast.LENGTH_SHORT)
+                                            Toast.makeText(context, "Deletion Failed!", Toast.LENGTH_SHORT).show()
                                         }
                                     )
                                 }
-                            }
-                        ) { Text("Delete", color = Color.Red) }
+                            },
+                            enabled = confirmUsername == actualUsername
+                        ) {
+                            Text("Delete", color = Color.Red)
+                        }
                     },
                     dismissButton = {
                         TextButton(onClick = { showDeleteDialog = false }) {
