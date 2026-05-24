@@ -36,6 +36,7 @@ fun LoginScreen(
     if (showResetDialog) {
         ForgotPasswordDialog(
             userManager = userManager,
+            initialEmail = email,
             onDismiss = { showResetDialog = false }
         )
     }
@@ -140,6 +141,9 @@ fun LoginScreen(
                     userManager.signIn(email, password) { result ->
                         result.onSuccess {
                             loginError = null
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
+                            }
                         }.onFailure {
                             loginError = "Login failed: ${it.localizedMessage}"
                         }
@@ -197,9 +201,10 @@ fun LoginScreen(
 @Composable
 fun ForgotPasswordDialog(
     userManager: UserManager,
+    initialEmail: String = "",
     onDismiss: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf(initialEmail) }
     var message by remember { mutableStateOf<String?>(null) }
     var isError by remember { mutableStateOf(false) }
 

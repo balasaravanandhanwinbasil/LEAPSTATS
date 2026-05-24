@@ -443,33 +443,36 @@ fun AchievementHexagon(
 ) {
     HexagonShapeBox(
         color = color,
-        modifier = modifier.size(150.dp, 160.dp)
-            .border(
-                2.dp,
-                MaterialTheme.colorScheme.outline,
-                shape = HexagonShape()
-            )
+        modifier = modifier
+            .size(150.dp, 160.dp)
+            .border(2.dp, MaterialTheme.colorScheme.outline, shape = HexagonShape())
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        Box(
+            modifier = Modifier.size(88.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = name,
-                color = textColor,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                maxLines = 3,
-                softWrap = true
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "Level $level",
-                color = textColor,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                AutoSizeText(
+                    text = name,
+                    color = textColor,
+                    fontWeight = FontWeight.Bold,
+                    maxFontSize = 14.sp,
+                    minFontSize = 7.sp,
+                    maxLines = 3
+                )
+                Spacer(Modifier.height(4.dp))
+                AutoSizeText(
+                    text = "Level $level",
+                    color = textColor,
+                    fontWeight = FontWeight.Medium,
+                    maxFontSize = 12.sp,
+                    minFontSize = 7.sp,
+                    maxLines = 1
+                )
+            }
         }
     }
 }

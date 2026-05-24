@@ -66,6 +66,7 @@ import java.time.LocalDate
 import java.util.UUID
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.unit.TextUnit
 import com.codex.leapSTATS.TeacherView.ContentView
 import com.codex.leapSTATS.ui.theme.LeapStatsTheme
 import com.google.firebase.FirebaseApp
@@ -152,87 +153,84 @@ class MainActivity : ComponentActivity() {
             }
 
             LeapStatsTheme {
-                if (isLoggedIn && isSSTStaff) {
-                    ContentView()
-                } else {
-                    // Otherwise, show student view navigation
-                    NavHost(
-                        navController = navController,
-                        startDestination = startDestination
-                    ) {
-                        composable("loading") {
-                            LoadingScreen()
+                when {
+                    // SST Staff gets their own view entirely
+                    isLoggedIn && isSSTStaff -> {
+                        ContentView()
+                    }
+
+                    // Everyone else goes through the student NavHost
+                    else -> {
+                        LaunchedEffect(authReady, isLoggedIn) {
+                            if (!authReady) return@LaunchedEffect
+                            if (isLoggedIn) {
+                                navController.navigate("home") {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            } else {
+                                navController.navigate("login") {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            }
                         }
 
-                        composable("login") {
-                            LoginScreen(
-                                userManager = userManager,
-                                navController = navController
-                            )
-                        }
-
-                        composable("signup") {
-                            SignUpScreen(
-                                userManager = userManager,
-                                navController = navController
-                            )
-                        }
-
-                        composable("home") {
-                            HomeView(
-                                navController = navController,
-                                serviceData = serviceData,
-                                leadershipData = leadershipData,
-                                participationData = participationData,
-                                achievementsData = achievementsData,
-                                userData = userData
-                            )
-                        }
-
-                        composable("profile") {
-                            ProfileView(navController = navController, userData = userData)
-                        }
-
-                        composable("leadership") {
-                            LeadershipView(navController = navController, dataManager = leadershipData)
-                        }
-
-                        composable("achievements") {
-                            AchievementsView(navController = navController, achievementsData = achievementsData)
-                        }
-
-                        composable("participation") {
-                            ParticipationView(navController = navController, participation = participationData)
-                        }
-
-                        composable("service") {
-                            ServiceHoursView(navController = navController, serviceData = serviceData)
-                        }
-
-                        composable("enrichment") {
-                            EnrichmentView(navController = navController)
-                        }
-
-                        composable("help") {
-                            HelpView(navController = navController)
-                        }
-
-                        composable("info") {
-                            LEAPSApp(
-                                outerNavController = navController,
-                                userData = userData,
-                                leadershipData = leadershipData,
-                                participationData = participationData,
-                                achievementsData = achievementsData,
-                                serviceData = serviceData
-                            )
-                        }
-
-                        composable("form") {
-                            FormView(
-                                userData = userData,
-                                navController = navController
-                            )
+                        NavHost(
+                            navController = navController,
+                            startDestination = "loading"
+                        ) {
+                            composable("loading") {
+                                LoadingScreen()
+                            }
+                            composable("login") {
+                                LoginScreen(userManager = userManager, navController = navController)
+                            }
+                            composable("signup") {
+                                SignUpScreen(userManager = userManager, navController = navController)
+                            }
+                            composable("home") {
+                                HomeView(
+                                    navController = navController,
+                                    serviceData = serviceData,
+                                    leadershipData = leadershipData,
+                                    participationData = participationData,
+                                    achievementsData = achievementsData,
+                                    userData = userData
+                                )
+                            }
+                            composable("profile") {
+                                ProfileView(navController = navController, userData = userData)
+                            }
+                            composable("leadership") {
+                                LeadershipView(navController = navController, dataManager = leadershipData)
+                            }
+                            composable("achievements") {
+                                AchievementsView(navController = navController, achievementsData = achievementsData)
+                            }
+                            composable("participation") {
+                                ParticipationView(navController = navController, participation = participationData)
+                            }
+                            composable("service") {
+                                ServiceHoursView(navController = navController, serviceData = serviceData)
+                            }
+                            composable("enrichment") {
+                                EnrichmentView(navController = navController)
+                            }
+                            composable("help") {
+                                HelpView(navController = navController)
+                            }
+                            composable("info") {
+                                LEAPSApp(
+                                    outerNavController = navController,
+                                    userData = userData,
+                                    leadershipData = leadershipData,
+                                    participationData = participationData,
+                                    achievementsData = achievementsData,
+                                    serviceData = serviceData
+                                )
+                            }
+                            composable("form") {
+                                FormView(userData = userData, navController = navController)
+                            }
                         }
                     }
                 }
@@ -567,8 +565,6 @@ fun HexagonButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    var statFontSize by remember { mutableStateOf(16.sp) }
-
     Box(
         modifier = modifier
             .size(130.dp)
@@ -579,41 +575,86 @@ fun HexagonButton(
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(horizontal = 10.dp)
+
+        Box(
+            modifier = Modifier
+                .size(80.dp),
+            contentAlignment = Alignment.Center
         ) {
-            if (icon != null) {
-                Icon(icon, contentDescription = null, tint = textColor, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.height(6.dp))
-            }
-            Text(
-                text = title,
-                color = textColor,
-                style = MaterialTheme.typography.titleSmall.copy(
-                    textDecoration = TextDecoration.Underline,
-                    fontWeight = FontWeight.Bold
-                ),
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = stat,
-                color = textColor,
-                fontSize = statFontSize,
-                lineHeight = statFontSize * 1.1f,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                onTextLayout = { result ->
-                    if (result.hasVisualOverflow && statFontSize > 11.sp) {
-                        statFontSize *= 0.9f
-                    }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                if (icon != null) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = textColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.height(3.dp))
                 }
-            )
+
+                AutoSizeText(
+                    text = title,
+                    color = textColor,
+                    fontWeight = FontWeight.Bold,
+                    textDecoration = TextDecoration.Underline,
+                    maxFontSize = 12.sp,
+                    minFontSize = 8.sp,
+                    maxLines = 1
+                )
+
+                if (stat.isNotBlank()) {
+                    Spacer(Modifier.height(2.dp))
+                    AutoSizeText(
+                        text = stat,
+                        color = textColor,
+                        fontWeight = FontWeight.Medium,
+                        maxFontSize = 13.sp,
+                        minFontSize = 8.sp,
+                        maxLines = 2
+                    )
+                }
+            }
         }
     }
+}
+
+// Reusable auto-sizing text that shrinks until it fits within maxLines
+@Composable
+fun AutoSizeText(
+    text: String,
+    color: Color,
+    fontWeight: FontWeight = FontWeight.Normal,
+    textDecoration: TextDecoration = TextDecoration.None,
+    maxFontSize: TextUnit = 14.sp,
+    minFontSize: TextUnit = 8.sp,
+    maxLines: Int = 1
+) {
+    var fontSize by remember(text) { mutableStateOf(maxFontSize) }
+    var readyToDraw by remember(text) { mutableStateOf(false) }
+
+    Text(
+        text = text,
+        color = color,
+        fontSize = fontSize,
+        fontWeight = fontWeight,
+        textAlign = TextAlign.Center,
+        maxLines = maxLines,
+        overflow = if (readyToDraw) TextOverflow.Ellipsis else TextOverflow.Visible,
+        textDecoration = textDecoration,
+        lineHeight = fontSize * 1.2f,
+        softWrap = true,
+        onTextLayout = { result ->
+            if (result.hasVisualOverflow && fontSize > minFontSize) {
+                fontSize = (fontSize.value * 0.85f).coerceAtLeast(minFontSize.value).sp
+            } else {
+                readyToDraw = true
+            }
+        },
+        modifier = Modifier.graphicsLayer { alpha = if (readyToDraw) 1f else 0f } // hide during shrink iterations
+    )
 }
 
 

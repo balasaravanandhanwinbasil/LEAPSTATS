@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import java.util.Calendar
@@ -155,7 +156,8 @@ fun LeadershipHexagonView(
     modifier: Modifier = Modifier
 ) {
     val levelInt = level.toIntOrNull() ?: 1
-    val backgroundColor = if (levelInt < 3) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary
+    val backgroundColor = if (levelInt < 3) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+    else MaterialTheme.colorScheme.primary
     val textColor = MaterialTheme.colorScheme.onPrimary
 
     Box(
@@ -164,31 +166,39 @@ fun LeadershipHexagonView(
             .background(color = backgroundColor, shape = HexagonShape()),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        // Constrain to inscribed safe zone, away from the hex points
+        Box(
+            modifier = Modifier.size(72.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                leadershipPositionName,
-                color = textColor,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                maxLines = 3
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "Year $leadershipPositionYear",
-                color = textColor,
-                style = MaterialTheme.typography.bodySmall,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                "Level $level",
-                color = textColor,
-                style = MaterialTheme.typography.bodySmall,
-                textAlign = TextAlign.Center
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                AutoSizeText(
+                    text = leadershipPositionName,
+                    color = textColor,
+                    fontWeight = FontWeight.Medium,
+                    maxFontSize = 12.sp,
+                    minFontSize = 7.sp,
+                    maxLines = 3
+                )
+                Spacer(Modifier.height(4.dp))
+                AutoSizeText(
+                    text = "Year $leadershipPositionYear",
+                    color = textColor.copy(alpha = 0.85f),
+                    maxFontSize = 10.sp,
+                    minFontSize = 7.sp,
+                    maxLines = 1
+                )
+                AutoSizeText(
+                    text = "Level $level",
+                    color = textColor.copy(alpha = 0.85f),
+                    maxFontSize = 10.sp,
+                    minFontSize = 7.sp,
+                    maxLines = 1
+                )
+            }
         }
     }
 }
@@ -202,14 +212,19 @@ fun AddLeadershipHexagon(modifier: Modifier = Modifier, onClick: () -> Unit) {
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            "+ Add Position",
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(8.dp)
-        )
+        Box(
+            modifier = Modifier.size(72.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            AutoSizeText(
+                text = "+ Add Position",
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold,
+                maxFontSize = 13.sp,
+                minFontSize = 8.sp,
+                maxLines = 2
+            )
+        }
     }
 }
 

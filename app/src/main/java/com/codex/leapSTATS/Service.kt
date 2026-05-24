@@ -260,30 +260,34 @@ fun ServiceHoursView(
 @Composable
 fun ServiceHexagon(name: String, hours: Int, modifier: Modifier = Modifier) {
     HexagonShapeBox(
-        // Much lighter green colors:
         color = if (hours < 3) Color(0xFFD6EDEA) else Color(0xFFB7E4DB),
         modifier = modifier
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+        Box(
+            modifier = Modifier.size(88.dp), // safe inscribed zone for 150x160dp hex
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = name,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 3,
-                softWrap = true,
-                overflow = TextOverflow.Ellipsis,
-                color = Color.Black
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = "$hours hour${if (hours == 1) "" else "s"}",
-                fontSize = 12.sp,
-                color = Color.Black
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                AutoSizeText(
+                    text = name,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
+                    maxFontSize = 14.sp,
+                    minFontSize = 7.sp,
+                    maxLines = 3
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                AutoSizeText(
+                    text = "$hours hour${if (hours == 1) "" else "s"}",
+                    color = Color.Black,
+                    maxFontSize = 12.sp,
+                    minFontSize = 7.sp,
+                    maxLines = 1
+                )
+            }
         }
     }
 }
