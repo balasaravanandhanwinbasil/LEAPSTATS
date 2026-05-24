@@ -161,8 +161,8 @@ class MainActivity : ComponentActivity() {
 
                     // Everyone else goes through the student NavHost
                     else -> {
-                        LaunchedEffect(authReady, isLoggedIn) {
-                            if (!authReady) return@LaunchedEffect
+                        LaunchedEffect(authReady) {
+                            if (!authReady) return@LaunchedEffect  // wait until Firebase is done
                             if (isLoggedIn) {
                                 navController.navigate("home") {
                                     popUpTo(0) { inclusive = true }
